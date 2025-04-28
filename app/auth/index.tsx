@@ -28,7 +28,7 @@ const AuthIndex = () => {
         </Link>
 
         <Link
-          href="/auth/sign-up"
+          href="/auth/sign-in"
           style={[
             styles.link,
             { marginTop: 15, backgroundColor: bgColor },
