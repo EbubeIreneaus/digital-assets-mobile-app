@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,15 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Colors from "@/lib/color";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { COUNTRIES } from "@/lib/countryList";
 import z, { Schema } from "zod";
+import {FontAwesome5} from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const InfoSchema = z.object({
-  firstname: z.string().min(1, { message: "firstname is required" }),
-  lastname: z.string().min(1, { message: "lastname is required" }),
+  first_name: z.string().min(1, { message: "firstname is required" }),
+  last_name: z.string().min(1, { message: "lastname is required" }),
   email: z.string().email({ message: "Invalid email address" }),
   country: z.string().min(1, { message: "Country is required" }),
   phone: z.string().min(10, { message: "Phone number is required" }),
@@ -24,8 +26,13 @@ const InfoSchema = z.object({
 
 const PasswordSchema = z
   .object({
-    password: z.coerce.string().min(6, { message: "Password must be 6 characters long" }),
-    confirm: z.coerce.string().min(6, { message: "Confirm password is required" }),
+    username: z.coerce.string().min(1, { message: "Username is required" }),
+    password: z.coerce
+      .string()
+      .min(6, { message: "Password must be 6 characters long" }),
+    confirm: z.coerce
+      .string()
+      .min(6, { message: "Confirm password is required" }),
   })
   .refine(
     (value) => {
@@ -42,18 +49,32 @@ const SignUp = () => {
   const colorScheme = useColorScheme();
   const textColor = colorScheme === "dark" ? Colors.textLight : Colors.textDark;
   const bgColor = colorScheme === "dark" ? Colors.dark : Colors.light;
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+
   const [accountType, setAccountType] = useState("personal");
 
   const [infoData, setInfoData] = useState({
-    firstname: "",
-    lastname: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    country: "",
+    country: "Afghanistan",
     phone: "",
+    code: '+93'
   });
 
+  useEffect(() => {
+    const code = infoData.code
+    const country = COUNTRIES.find(ct => ct.name == infoData.country)
+    if (country?.mobileCode) {
+      setInfoData({...infoData, code: country.mobileCode})
+    }
+  }, [infoData.country])
+
+
   const [psw, setPsw] = useState({
+    username: "",
     password: "",
     confirm: "",
   });
@@ -83,8 +104,50 @@ const SignUp = () => {
         if (res.error) {
           alert(res.error.issues[0].message);
         } else {
+          submit();
         }
         break;
+    }
+  }
+
+  
+
+  async function submit() {
+    setIsLoading(true);
+    setError(null);
+    let body = { type: accountType, ...infoData, ...psw };
+    try {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/auth/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      
+      const data = await res.json();
+
+      if(data.status === "success"){
+        delete data.status
+        AsyncStorage.setItem("user", JSON.stringify(data))
+        return router.push("/")
+      }
+
+      if (data.status === 'failed') {
+        if (data.code === 'invalid_data') {
+          const errors = data.errors
+          const error_keys = Object.keys(errors) 
+          setError(errors[error_keys[0]][0])
+          return
+        }
+
+        return setError(data.code)
+      }
+
+    } catch (error: any) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -98,14 +161,20 @@ const SignUp = () => {
         },
       ]}
     >
-      <Text style={{ fontSize: 32, fontWeight: "bold", color: textColor }}>
+     <View style={{flexDirection: 'row', alignItems: 'center', gap: 20}}>
+      {step > 1 && <Pressable onPress={() => setStep(step -1)}>
+        <FontAwesome5 name="arrow-left" size={24} color={textColor} />
+      </Pressable>}
+     <Text style={{ fontSize: 24, fontWeight: "bold", color: textColor }}>
         Sign up
       </Text>
+
+     </View>
       <Text style={[styles.headDesc, { color: textColor }]}>
         Create a Digital Assets Growth profile with a few details.
       </Text>
       <Text style={[styles.headDesc, { color: Colors.primary }]}>
-        Step {step} / 3
+        Step {step} / 3 
       </Text>
 
       {/* Step 1 displaying account type selection */}
@@ -126,7 +195,7 @@ const SignUp = () => {
 
       {/* Step 2 displaying account type selection */}
       {step === 2 && (
-        <ScrollView style={[styles.formContainer, { height: 200 }]}>
+        <ScrollView style={[styles.formContainer, { height: 200, marginBottom: 30 }]}>
           <View>
             <Text style={[styles.label, { color: textColor }]}>Firstname</Text>
             <TextInput
@@ -136,8 +205,8 @@ const SignUp = () => {
               ]}
               placeholder="Enter your firstname"
               placeholderTextColor={textColor}
-              value={infoData.firstname}
-              onChangeText={(val) => handleInfoData(val, "firstname")}
+              value={infoData.first_name}
+              onChangeText={(val) => handleInfoData(val, "first_name")}
             />
           </View>
 
@@ -150,8 +219,8 @@ const SignUp = () => {
               ]}
               placeholder="Enter your lastname"
               placeholderTextColor={textColor}
-              value={infoData.lastname}
-              onChangeText={(val) => handleInfoData(val, "lastname")}
+              value={infoData.last_name}
+              onChangeText={(val) => handleInfoData(val, "last_name")}
             />
           </View>
 
@@ -210,8 +279,22 @@ const SignUp = () => {
 
       {/* Step 3 password secton */}
       {step === 3 && (
-        <View style={styles.formContainer}>
+        <ScrollView style={[styles.formContainer, {marginBottom: 30}]}>
           <View>
+            <Text style={[styles.label, { color: textColor }]}>Username</Text>
+            <TextInput
+              style={[
+                styles.input,
+                { backgroundColor: bgColor, color: textColor },
+              ]}
+              placeholder="Enter your username"
+              placeholderTextColor={textColor}
+              value={psw.username}
+              onChangeText={(val) => setPsw({ ...psw, username: val })}
+            />
+          </View>
+
+          <View style={{ marginVertical: 14 }}>
             <Text style={[styles.label, { color: textColor }]}>Password</Text>
             <TextInput
               style={[
@@ -222,11 +305,11 @@ const SignUp = () => {
               secureTextEntry={true}
               placeholderTextColor={textColor}
               value={psw.password}
-              onChangeText={(val => setPsw({...psw, password: val}))}
+              onChangeText={(val) => setPsw({ ...psw, password: val })}
             />
           </View>
 
-          <View style={{ marginVertical: 14 }}>
+          <View>
             <Text style={[styles.label, { color: textColor }]}>
               Confirm Password
             </Text>
@@ -239,10 +322,10 @@ const SignUp = () => {
               secureTextEntry={true}
               placeholderTextColor={textColor}
               value={psw.confirm}
-              onChangeText={(val => setPsw({...psw, confirm: val}))}
+              onChangeText={(val) => setPsw({ ...psw, confirm: val })}
             />
           </View>
-        </View>
+        </ScrollView>
       )}
 
       <View
@@ -254,29 +337,44 @@ const SignUp = () => {
           },
         ]}
       >
-        <Text
-          style={[
-            styles.nextText,
-            {
-              color: textColor,
-              backgroundColor:
-                colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
-            },
-          ]}
-        >
-          By tapping "Next", you agree to our{" "}
-          <Link href="/" style={styles.linkText}>
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/" style={styles.linkText}>
-            Privacy Policy
-          </Link>
-          .
-        </Text>
+        {error ? (
+          <Text
+            style={[
+              styles.nextText,
+              {
+                color: "red",
+                backgroundColor:
+                  colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
+              },
+            ]}
+          >
+            {error}.
+          </Text>
+        ) : (
+          <Text
+            style={[
+              styles.nextText,
+              {
+                color: textColor,
+                backgroundColor:
+                  colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
+              },
+            ]}
+          >
+            By tapping "Next", you agree to our{" "}
+            <Link href="/">
+              <Text style={styles.linkText}>Terms of Service</Text>
+            </Link>{" "}
+            and{" "}
+            <Link href="/">
+              <Text style={styles.linkText}>Privacy Policy</Text>
+            </Link>
+            .
+          </Text>
+        )}
 
         <Pressable style={styles.nextButton} onPress={nextStep}>
-          <Text>Next</Text>
+          <Text style={{ color: textColor }}>Next</Text>
         </Pressable>
       </View>
     </View>

@@ -12,7 +12,7 @@ const Colors = {
    textDark: '#1A1A1A', // Very dark text on white background
  
    // Accent
-   primary: '#5C2D91',
+   primary: '#1D3B53',
   };
   
   export default Colors;

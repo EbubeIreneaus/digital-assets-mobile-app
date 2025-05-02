@@ -1,45 +1,44 @@
 import { Link } from "expo-router";
 import React from "react";
-import { Text, View, StyleSheet, useColorScheme } from "react-native";
+import { Text, View, StyleSheet, Image} from "react-native";
 import Colors from "@/lib/color";
 
 const AuthIndex = () => {
-  const colorScheme = useColorScheme();
-  const textColor = colorScheme === "dark" ? Colors.textLight : Colors.textDark;
-  const bgColor = colorScheme === "dark" ? Colors.dark : Colors.light;
-
   return (
-    <View style={[styles.container, { backgroundColor: colorScheme === "dark" ? Colors.bgDark : Colors.bgLight }]}>
-      <View style={{ flex: 1 }}></View>
+    <View className="bg-bgLight dark:bg-bgDark flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
+        <Image
+          source={require('@/assets/images/logo-tr.png')}
+          style={{ width: 230, height: 180 }}
+        />
+        <Text
+          className="text-primary font-semibold text-center text-xl"
+        >
+          Welcome to Digital Assets
+        </Text>
+      <View>
+
+      </View>
+      </View>
+      
 
       <View style={[{ flex: 1 / 3 }]}>
         <Link
           href="/auth/sign-up"
-          style={[styles.link, { backgroundColor: bgColor }]}
+          style={styles.link}
+          className="bg-light dark:bg-dark"
         >
-          <Text
-            style={[
-              styles.text,
-              { color: textColor},
-            ]}
-          >
+          <Text style={styles.text} className="text-dark dark:text-light">
             Create Account
           </Text>
         </Link>
 
         <Link
           href="/auth/sign-in"
-          style={[
-            styles.link,
-            { marginTop: 15, backgroundColor: bgColor },
-          ]}
+          style={styles.link}
+          className="bg-light dark:bg-dark mt-[15px]"
         >
-          <Text
-            style={[
-              styles.text,
-              { color: textColor },
-            ]}
-          >
+          <Text style={styles.text} className="text-dark dark:text-light">
             Already have an account? sign in
           </Text>
         </Link>
