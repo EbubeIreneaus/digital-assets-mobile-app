@@ -9,12 +9,12 @@ type props = {
 }
 const TransactionItem = ({item}: any) => {
   return (
-    <View>
+    <View className="mx-3 mb-3">
       <Link href="/" asChild>
         <Pressable className="flex-row justify-between items-center dark:bg-dark bg-light py-4 px-4 rounded-md">
           <View className="flex-row items-center gap-5">
             <View className=" items-center justify-center rounded-full">
-              <MaterialIcons name={item.type == 'withdrawal'? 'remove' : 'add-circle'} size={50} color='yellow'  />
+              <MaterialIcons name={item.type == 'withdrawal'? 'remove' : 'add-circle'} size={40} color='green'  />
             </View>
             <View>
                 <Text className="dark:text-light capitalize">{item.type}</Text>
@@ -23,7 +23,7 @@ const TransactionItem = ({item}: any) => {
           </View>
 
           <View>
-            <Text className="text-2xl font-semibold dark:text-light">{Currency(100)}</Text>
+            <Text className="text-xl font-semibold dark:text-light">{Currency(100)}</Text>
           </View>
         </Pressable>
       </Link>

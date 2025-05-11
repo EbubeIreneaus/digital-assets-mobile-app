@@ -11,6 +11,7 @@ export default function RootLayout() {
       <Stack.Screen name="auth" options={{ headerShown: false }} />
       <Stack.Screen name="(settings)" options={{ headerShown: false }} />
       <Stack.Screen name="(profile)" options={{ headerShown: false }} />
+      <Stack.Screen name="(others)" options={{ headerShown: false }} />
       <Stack.Screen
         name="+not-found"
         options={{ title: "404 Page Not Found" }}

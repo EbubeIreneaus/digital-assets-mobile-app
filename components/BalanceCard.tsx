@@ -4,7 +4,12 @@ import Balance from "./Balance";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 
-const BalanceCard = () => {
+type props = {
+  balance: number,
+  available_balance: number
+}
+
+const BalanceCard = ({account}:{account: props}) => {
   const [isVisible, setIsVisible] = React.useState(true);
   return (
     <View>
@@ -18,7 +23,7 @@ const BalanceCard = () => {
             />
             <Text className="dark:text-light">United States Dollars</Text>
           </View>
-          <Balance amount={10000} hide={!isVisible} />
+          <Balance amount={account.balance} hide={!isVisible} />
           <Text className="dark:text-light text-sm mt-1.5">
             Getting your balance
           </Text>
@@ -48,7 +53,7 @@ const BalanceCard = () => {
       </View>
 
       <View className="flex-row justify-between gap-5 my-7 px-5">
-        <Link href="/" asChild>
+        <Link href="/deposit" asChild>
           <Pressable className="dark:bg-dark bg-light rounded-md flex-1 flex-row justify-center items-center gap-2 h-16">
             <MaterialIcons name="attach-money" size={20} className="dark:!text-light" />
             <Text className="dark:text-light dark:bg-dark bg-light">
@@ -69,7 +74,7 @@ const BalanceCard = () => {
 
       <View className="dark:bg-dark bg-light py-3 px-4 mx-3 rounded-md flex-row justify-between items-center border-t-4 border-t-primary">
         <Text className="dark:text-light text-sm">Available for spend</Text>
-        <Balance amount={3000} hide={!isVisible} size="small" />
+        <Balance amount={account.available_balance} hide={!isVisible} size="small" />
       </View>
     </View>
   );

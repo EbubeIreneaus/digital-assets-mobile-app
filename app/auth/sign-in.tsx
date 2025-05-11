@@ -18,37 +18,39 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
   async function handleSubmit() {
     setIsLoading(true);
     setError(null);
-    if (!form.username || !form.password) {
+    if (!form.email || !form.password) {
       setIsLoading(false);
       return setError("Username and password are required.");
     }
     try {
-      const res = await fetch(`http://192.168.55.110:8000/api/auth/`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/auth/`, {
         method: "POST",
         body: JSON.stringify(form),
         headers: {
           "Content-Type": "application/json",
         },
       });
+
       const data: any = await res.json();
-      if (data.status === "success") {
-        setError(null);
-        delete data.status;
-        AsyncStorage.setItem("user", JSON.stringify(data));
-        return router.push("/");
+
+      if (data.success) {
+        AsyncStorage.setItem("token", data.token);
+        if (!data.email_verified) {
+          return router.push(`/auth/otp-verify?email=${data.email}`);
+        }
+        return router.replace(`/`);
       }
 
-      return setError(data.code);
+      return setError(data.msg);
     } catch (error: any) {
       setError(error.message);
-      console.log(error);
     } finally {
       setIsLoading(false);
     }
@@ -70,24 +72,30 @@ const SignIn = () => {
 
       <View style={styles.formContainer}>
         <View>
-          <Text style={styles.label} className="text-dark dark:text-light">
-            Login Username
+          <Text
+            style={styles.label}
+            className="text-dark dark:text-light ps-2 mb-1.5"
+          >
+            Email
           </Text>
           <TextInput
             style={styles.input}
-            className="text-dark dark:text-light bg-light dark:bg-dark"
+            className="text-dark dark:text-light bg-light dark:bg-dark rounded-md"
             placeholder="Enter your username"
-            value={form.username}
-            onChangeText={(val) => setForm({ ...form, username: val })}
+            value={form.email}
+            onChangeText={(val) => setForm({ ...form, email: val })}
           />
         </View>
         <View style={{ marginTop: 14 }}>
-          <Text style={[styles.label]} className="text-dark dark:text-light">
-            Login Password
+          <Text
+            style={[styles.label]}
+            className="text-dark dark:text-light ps-2 mb-1.5"
+          >
+            Password
           </Text>
           <TextInput
             style={styles.input}
-            className="dark:text-light bg-light dark:bg-dark placeholder:text-dark"
+            className="dark:text-light bg-light dark:bg-dark  rounded-md"
             placeholder="Enter your password"
             value={form.password}
             onChangeText={(val) => setForm({ ...form, password: val })}
@@ -96,19 +104,14 @@ const SignIn = () => {
         </View>
 
         <Link href="/" className="mt-4">
-          <Text
-            className="text-primary font-semibold text-center text-lg"
-           
-          >
+          <Text className="text-primary font-semibold text-center text-lg">
             Forgot Password?
           </Text>
         </Link>
       </View>
 
       <View
-        style={[
-          styles.nextContainer
-        ]}
+        style={[styles.nextContainer]}
         className="bg-bgLight dark:bg-bgDark"
       >
         <Text
@@ -131,7 +134,11 @@ const SignIn = () => {
           disabled={isLoading}
         >
           {isLoading && (
-            <FontAwesome5 name="spinner" size={20} className="!text-light animate-spin" />
+            <FontAwesome5
+              name="spinner"
+              size={20}
+              className="!text-light animate-spin"
+            />
           )}
           <Text className="text-light"> Sign in</Text>
         </Pressable>

@@ -12,7 +12,8 @@ export default function Index() {
       if (!user) {
         router.replace("/auth");
       } else {
-        router.replace('/dashboard');
+        router.replace('/plan/tradingPlan');
+        // router.replace('/dashboard');
       }
     };
     checkUser();

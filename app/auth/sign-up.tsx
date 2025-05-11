@@ -7,13 +7,14 @@ import {
   Pressable,
   useColorScheme,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Colors from "@/lib/color";
 import { Link, router } from "expo-router";
 import { COUNTRIES } from "@/lib/countryList";
 import z, { Schema } from "zod";
-import {FontAwesome5} from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const InfoSchema = z.object({
@@ -26,7 +27,6 @@ const InfoSchema = z.object({
 
 const PasswordSchema = z
   .object({
-    username: z.coerce.string().min(1, { message: "Username is required" }),
     password: z.coerce
       .string()
       .min(6, { message: "Password must be 6 characters long" }),
@@ -52,7 +52,6 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
   const [accountType, setAccountType] = useState("personal");
 
   const [infoData, setInfoData] = useState({
@@ -61,20 +60,18 @@ const SignUp = () => {
     email: "",
     country: "Afghanistan",
     phone: "",
-    code: '+93'
+    code: "+93",
   });
 
   useEffect(() => {
-    const code = infoData.code
-    const country = COUNTRIES.find(ct => ct.name == infoData.country)
+    const code = infoData.code;
+    const country = COUNTRIES.find((ct) => ct.name == infoData.country);
     if (country?.mobileCode) {
-      setInfoData({...infoData, code: country.mobileCode})
+      setInfoData({ ...infoData, code: country.mobileCode });
     }
-  }, [infoData.country])
-
+  }, [infoData.country]);
 
   const [psw, setPsw] = useState({
-    username: "",
     password: "",
     confirm: "",
   });
@@ -83,7 +80,32 @@ const SignUp = () => {
     setInfoData({ ...infoData, [field]: val });
   }
 
-  function nextStep() {
+  async function check_email_exist() {
+    try {
+      setIsLoading(true);
+      const req = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/auth/email-already-exist/${infoData.email}`
+      );
+    
+      if (req.status !== 200) {
+        ToastAndroid.show("server error, try again.", ToastAndroid.LONG);
+        return false;
+      }
+
+      const res = await req.json();
+      
+      if (res.exist) {
+        setError("Email already exist on our server");
+        return false;
+      }
+      return true;
+    } catch (error) {
+      ToastAndroid.show("server error, try again.", ToastAndroid.LONG);
+      return false;
+    }
+  }
+
+  async function nextStep() {
     let res;
     switch (step) {
       case 1:
@@ -95,7 +117,7 @@ const SignUp = () => {
         if (res.error) {
           alert(res.error.issues[0].message);
         } else {
-          setStep(3);
+          await check_email_exist() && setStep(3)
         }
         break;
 
@@ -110,14 +132,17 @@ const SignUp = () => {
     }
   }
 
-  
-
   async function submit() {
     setIsLoading(true);
     setError(null);
-    let body = { type: accountType, ...infoData, ...psw };
+
+    let body: any = { type: accountType, ...infoData, ...psw };
+    body.fullname = infoData.first_name + ' ' + infoData.last_name
+    delete body.first_name
+    delete body.last_name
+    delete body.confirm
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/auth/`, {
+      const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/auth/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -125,25 +150,13 @@ const SignUp = () => {
         body: JSON.stringify(body),
       });
       
-      const data = await res.json();
+      const res = await req.json()
 
-      if(data.status === "success"){
-        delete data.status
-        AsyncStorage.setItem("user", JSON.stringify(data))
-        return router.push("/")
+      if (res.success) {
+        AsyncStorage.setItem('token', res.token)
+        return router.replace(`/auth/otp-verify?email=${res.email}`)
       }
-
-      if (data.status === 'failed') {
-        if (data.code === 'invalid_data') {
-          const errors = data.errors
-          const error_keys = Object.keys(errors) 
-          setError(errors[error_keys[0]][0])
-          return
-        }
-
-        return setError(data.code)
-      }
-
+      setError(res.msg)
     } catch (error: any) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -161,20 +174,21 @@ const SignUp = () => {
         },
       ]}
     >
-     <View style={{flexDirection: 'row', alignItems: 'center', gap: 20}}>
-      {step > 1 && <Pressable onPress={() => setStep(step -1)}>
-        <FontAwesome5 name="arrow-left" size={24} color={textColor} />
-      </Pressable>}
-     <Text style={{ fontSize: 24, fontWeight: "bold", color: textColor }}>
-        Sign up
-      </Text>
-
-     </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+        {step > 1 && (
+          <Pressable onPress={() => setStep(step - 1)} className="p-3">
+            <FontAwesome5 name="arrow-left" size={24} color={textColor} />
+          </Pressable>
+        )}
+        <Text style={{ fontSize: 24, fontWeight: "bold", color: textColor }}>
+          Sign up
+        </Text>
+      </View>
       <Text style={[styles.headDesc, { color: textColor }]}>
         Create a Digital Assets Growth profile with a few details.
       </Text>
       <Text style={[styles.headDesc, { color: Colors.primary }]}>
-        Step {step} / 3 
+        Step {step} / 3
       </Text>
 
       {/* Step 1 displaying account type selection */}
@@ -182,7 +196,12 @@ const SignUp = () => {
         <View style={styles.formContainer}>
           <Text style={[styles.label, { color: textColor }]}>Account Type</Text>
           <View style={[styles.input, { backgroundColor: bgColor }]}>
-            <Picker style={{ color: textColor }} dropdownIconColor={textColor}>
+            <Picker
+              style={{ color: textColor }}
+              dropdownIconColor={textColor}
+              selectedValue={accountType}
+              onValueChange={(val: string) => setAccountType(val)}
+            >
               <Picker.Item label="Personal" value="personal" />
               <Picker.Item label="Joint" value="joint" />
               <Picker.Item label="Organization" value="organization" />
@@ -195,7 +214,9 @@ const SignUp = () => {
 
       {/* Step 2 displaying account type selection */}
       {step === 2 && (
-        <ScrollView style={[styles.formContainer, { height: 200, marginBottom: 30 }]}>
+        <ScrollView
+          style={[styles.formContainer, { height: 200, marginBottom: 30 }]}
+        >
           <View>
             <Text style={[styles.label, { color: textColor }]}>Firstname</Text>
             <TextInput
@@ -279,21 +300,7 @@ const SignUp = () => {
 
       {/* Step 3 password secton */}
       {step === 3 && (
-        <ScrollView style={[styles.formContainer, {marginBottom: 30}]}>
-          <View>
-            <Text style={[styles.label, { color: textColor }]}>Username</Text>
-            <TextInput
-              style={[
-                styles.input,
-                { backgroundColor: bgColor, color: textColor },
-              ]}
-              placeholder="Enter your username"
-              placeholderTextColor={textColor}
-              value={psw.username}
-              onChangeText={(val) => setPsw({ ...psw, username: val })}
-            />
-          </View>
-
+        <ScrollView style={[styles.formContainer, { marginBottom: 30 }]}>
           <View style={{ marginVertical: 14 }}>
             <Text style={[styles.label, { color: textColor }]}>Password</Text>
             <TextInput
@@ -310,8 +317,8 @@ const SignUp = () => {
           </View>
 
           <View>
-            <Text style={[styles.label, { color: textColor }]}>
-              Confirm Password
+            <Text style={[styles.label, { color: textColor }]} >
+              Confirm 
             </Text>
             <TextInput
               style={[
@@ -374,7 +381,7 @@ const SignUp = () => {
         )}
 
         <Pressable style={styles.nextButton} onPress={nextStep}>
-          <Text style={{ color: textColor }}>Next</Text>
+          <Text className="text-light">Next</Text>
         </Pressable>
       </View>
     </View>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Stack } from 'expo-router'
-import { StatusBar } from 'react-native'
+import { StatusBar, Text, View } from 'react-native'
 import Colors from '@/lib/color'
 
 const AuthLayout = () => {
@@ -10,6 +10,14 @@ const AuthLayout = () => {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name='sign-up' options={{headerShown: false}} />
         <Stack.Screen name='sign-in' options={{headerShown: false}} />
+        <Stack.Screen name='otp-verify' options={{
+          headerTitle(props) {
+            return <Text className='text-xl fornt-extrabold text-light'>OTP Verification</Text>; // Return an empty React fragment or any valid ReactNode
+          },
+         headerStyle: {
+          backgroundColor: Colors.primary
+         }
+        }} />
       </Stack>
      </>
   ) 
