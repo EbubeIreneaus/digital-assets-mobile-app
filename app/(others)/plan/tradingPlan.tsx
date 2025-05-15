@@ -21,6 +21,8 @@ import { Link, router } from "expo-router";
 const MyPlan = Object.keys(InvestPlan) as Array<keyof typeof InvestPlan>;
 const tradingPlan = () => {
   const [account, setAccount] = useState({total_invested: 0, total_gain: 0})
+  const [plans, setPlans] = useState<any>([])
+  
 
   async function fetchData(){
     try {
@@ -29,7 +31,7 @@ const tradingPlan = () => {
         return router.push('/auth/sign-in')
       }
 
-      const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/account/invest-details`, {
+      const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/investment/trading-plan`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -37,7 +39,8 @@ const tradingPlan = () => {
       const res = await req.json()
     
       if (res.success) {
-        return setAccount(res.data)
+        setPlans(res.plans)
+        return setAccount(res.account)
       }
 
       ToastAndroid.show('unknown server error', ToastAndroid.LONG)
@@ -69,7 +72,7 @@ const tradingPlan = () => {
 
             <View>
               <Text className="text-3xl font-bold dark:text-light">
-                +{Currency(account.total_gain)}
+                {Currency(account.total_gain)}
               </Text>
               <Text className="text-primary text-center">Total Gain</Text>
             </View>
@@ -103,15 +106,15 @@ const tradingPlan = () => {
           </View>
 
           <View>
-            {MyPlan.map((plan) => (
-              <Link href="/" asChild key={plan}>
+            {plans.map((plan: any) => (
+              <Link href={`/plan/myPlan?p=${plan.name}`} asChild key={plan.name}>
                 <TouchableOpacity className="flex-row justify-between items-center py-3  mb-5">
                   <Image
-                    source={InvestPlan[plan].image}
-                    className="size-[40px]"
+                    source={{uri: `${process.env.EXPO_PUBLIC_API_URL}/${plan.icon}`}}
+                    className="size-[30px]"
                   />
-                  <Text className="text-lg capitalize font-semibold dark:text-light">{InvestPlan[plan].name}</Text>
-                  <Text className="text-lg dark:text-light dark:bg-slate-100/20 bg-slate-950/20 px-3 py-1.5 rounded-lg w-fit">+{InvestPlan[plan].roi}%</Text>
+                  <Text className="text-lg capitalize font-semibold dark:text-light">{plan.label}</Text>
+                  <Text className="text-lg dark:text-light dark:bg-slate-100/20 bg-slate-950/20 px-3 py-1.5 rounded-lg w-fit">+{plan.roi}%</Text>
                 </TouchableOpacity>
               </Link>
             ))}

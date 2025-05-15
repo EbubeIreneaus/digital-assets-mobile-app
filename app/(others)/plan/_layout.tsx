@@ -20,7 +20,65 @@ export default function RootLayout() {
             headerBackVisible: false,
           })}
         />
-        <Stack.Screen name="myPlan" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="myPlan"
+          options={({ navigation }) => ({
+            title: "Stock",
+            headerStyle: {
+              backgroundColor: Colors.primary,
+            },
+            headerTitleStyle: {
+              color: "white",
+            },
+            headerTitleAlign: "center",
+            headerBackVisible: false,
+          })}
+        />
+
+        <Stack.Screen
+          name="BuyPlan"
+          options={({ navigation }) => ({
+            title: "Buy Plan",
+            headerStyle: {
+              backgroundColor: Colors.primary,
+            },
+            headerTitleStyle: {
+              color: "white",
+            },
+            headerTitleAlign: "center",
+            headerBackVisible: false,
+          })}
+        />
+
+        <Stack.Screen
+          name="SellPlan"
+          options={({ navigation }) => ({
+            title: "Sell Plan",
+            headerStyle: {
+              backgroundColor: Colors.primary,
+            },
+            headerTitleStyle: {
+              color: "white",
+            },
+            headerTitleAlign: "center",
+            headerBackVisible: false,
+          })}
+        />
+
+        <Stack.Screen
+          name="SwapPlan"
+          options={({ navigation }) => ({
+            title: "Swap Plan",
+            headerStyle: {
+              backgroundColor: Colors.primary,
+            },
+            headerTitleStyle: {
+              color: "white",
+            },
+            headerTitleAlign: "center",
+            headerBackVisible: false,
+          })}
+        />
       </Stack>
     </>
   );
