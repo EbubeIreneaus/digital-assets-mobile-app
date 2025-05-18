@@ -32,10 +32,16 @@ const TabLayout = () => {
         options={{
           title: "Transactions",
           tabBarLabelStyle: { color: textColor },
+          headerStyle: {
+            backgroundColor: primaryColor
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            color: 'white'
+          },
           tabBarIcon: () => (
             <FontAwesome5 name="history" size={24} color={textColor} />
           ),
-          headerShown: false,
           tabBarAccessibilityLabel: "History",
         }}
       />
@@ -43,12 +49,19 @@ const TabLayout = () => {
       <Tabs.Screen
         name="customer-care"
         options={{
-          title: "Support",
+          title: "Customer Support",
           tabBarLabelStyle: { color: textColor },
+          headerStyle: {
+            backgroundColor: primaryColor
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            color: 'white'
+          },
           tabBarIcon: () => (
             <MaterialIcons name="support-agent" size={24} color={textColor} />
           ),
-          headerShown: false,
+          
           tabBarAccessibilityLabel: "customer care",
         }}
       />

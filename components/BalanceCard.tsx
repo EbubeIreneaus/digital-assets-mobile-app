@@ -62,7 +62,7 @@ const BalanceCard = ({account}:{account: props}) => {
           </Pressable>
         </Link>
 
-        <Link href="/" asChild>
+        <Link href={`/withdrawal?available_balance=${account.available_balance}`} asChild>
           <Pressable className="dark:bg-dark bg-light rounded-md flex-1 flex-row justify-center items-center gap-2 h-16">
             <MaterialIcons name="wallet" size={20} className="dark:!text-light" />
             <Text className="dark:text-light dark:bg-dark bg-light">

@@ -10,6 +10,9 @@ export default function RootLayout() {
         <Stack.Screen name="plan" options={{ headerShown: false }} />
         <Stack.Screen name="convert" options={{ headerShown: false }} />
         <Stack.Screen name="transfer" options={{ headerShown: false }} />
+        <Stack.Screen name="transfer02" options={{ headerShown: false }} />
+        <Stack.Screen name="withdrawal" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="" options={{ headerShown: false }} /> */}
       </Stack>
     </>
   );

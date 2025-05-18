@@ -4,7 +4,7 @@ import { getJwtUser } from "@/lib/JWTUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import Toast from 'react-native-simple-toast'
+import Toast from "react-native-simple-toast";
 import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
@@ -13,12 +13,12 @@ import {
   Pressable,
   Image,
   ScrollView,
-  
 } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
+import * as SecureStore from 'expo-secure-store'
 
-const OTPVerify = () => {
-  const { email }: { email: string } = useLocalSearchParams();
+const VerifyUser = () => {
+  const { action }: { action: string } = useLocalSearchParams();
   const [timeCount, setTimeCount] = useState(0);
   const [otp, setOTP] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,25 +39,14 @@ const OTPVerify = () => {
     }, 1000);
   }
 
-  function decodeEmail() {
-    const email_first_three = email.slice(0, 3);
-    const digitIndex = [...email].findIndex((e) => !isNaN(Number(e)));
-    const atIndex = email.indexOf("@");
-    const startIndex = digitIndex > -1 ? digitIndex : atIndex;
-    const email_last = email.slice(startIndex);
-    const decodeEmail = email_first_three + "....." + email_last;
-    return decodeEmail;
-  }
-
   async function sendOtp() {
-
     try {
-      const token = await getToken()
+      const token = await getToken();
       waitTime();
       await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/auth/send_otp_code/`,
         {
-           headers: {
+          headers: {
             Authorization: `Bearer ${token}`,
           },
         }
@@ -69,13 +58,14 @@ const OTPVerify = () => {
 
   async function submitOtpCode(otpCode: string) {
     try {
+        const token = await getToken()
       setOTP(otpCode);
       setIsLoading(true);
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/auth/verify-otp/${otpCode}`,
         {
           headers: {
-            Authorization: `Bearer ${(await getToken()) || null}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -83,8 +73,7 @@ const OTPVerify = () => {
       const res = await req.json();
 
       if (res.success) {
-        AsyncStorage.setItem("token", res.token);
-        return router.replace("/");
+        return ValidateRequest();
       }
       Toast.show(res.msg, Toast.LONG);
     } catch (error) {
@@ -96,10 +85,21 @@ const OTPVerify = () => {
     }
   }
 
+  async function ValidateRequest(){
+    if (action === 'pin') {
+        await SecureStore.deleteItemAsync('pin')
+        return router.replace('/SetPin')
+    }
+
+    if (action === 'password') {
+         return router.replace('/ResetPassword')
+    }
+  }
+
   useEffect(() => {
-    sendOtp()
+    sendOtp();
   }, []);
-  
+
   return (
     <ScrollView className="dark:bg-bgDark bg-bgLight flex-1 px-5 ">
       <TouchableWithoutFeedback>
@@ -115,8 +115,8 @@ const OTPVerify = () => {
               OTP Code Verification
             </Text>
             <Text className=" text-xl dark:text-light text-center">
-              We have sent an OTP code to your email address {decodeEmail()}{" "}
-              Enter OTP Code below to verify
+              We have sent an OTP code to your email address Enter OTP Code
+              below to verify
             </Text>
           </View>
           <View className="mb-5">
@@ -155,4 +155,4 @@ const OTPVerify = () => {
   );
 };
 
-export default OTPVerify;
+export default VerifyUser;
