@@ -1,7 +1,7 @@
 import useAppTheme from "@/lib/appTheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Link, RelativePathString } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -9,43 +9,53 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  StyleSheet,
+  RefreshControl,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-simple-toast";
 import { getToken } from "@/lib/authToken";
+import LoaderScreen from "@/components/LoaderScreen";
 
 const screenHeight = Dimensions.get("window").height;
 const setting = () => {
-  const { textColor } = useAppTheme();
+    const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [imgSrc, setImgSrc] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false)
   const [user, setUser] = useState({
     fullname: "",
     profile_pics: "",
     document_verified: false,
     email_verified: false,
+    tier: 1,
   });
 
-  useEffect(() => {
-    async function FetchData() {
-      const token = await getToken();
-      try {
-        const req = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/auth/personal-information`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const res = await req.json();
-        if (res.success) {
-          return setUser(res);
+  async function FetchData() {
+    const token = await getToken();
+    setIsLoading(true);
+    try {
+      const req = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/auth/personal-information`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-        Toast.show("unknown server error", Toast.LONG);
-      } catch (error) {
-        Toast.show("unexpected error, try again", Toast.LONG);
+      );
+      const res = await req.json();
+      if (res.success) {
+        return setUser(res);
       }
+      Toast.show("unknown server error", Toast.LONG);
+    } catch (error) {
+      Toast.show("unexpected error, try again", Toast.LONG);
+    } finally {
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
     FetchData();
   }, []);
 
@@ -104,9 +114,14 @@ const setting = () => {
     }
   }
 
+ const refresh = useCallback(async () => {
+    await FetchData()
+    setRefreshing(false)
+  }, [])
+
   return (
-    <ScrollView>
-      <View className="flex-1 dark:bg-slate-900 bg-bgLight px-5">
+    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight " refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}>
+      <View className="flex-1 dark:bg-bgDark bg-bgLight px-5">
         <View
           className=" rounded-lg  justify-center py-5 px-2"
           style={{ minHeight: screenHeight }}
@@ -142,16 +157,22 @@ const setting = () => {
             </View>
             <View className="flex-row items-center">
               <Text
-              style={{ color: textColor }}
-              className="text-lg font-bold text-center"
-            >
-              {user.fullname}
-            </Text>
-            <MaterialIcons name="verified" size={20} className="!text-blue-500" />
+                style={{ color: textColor }}
+                className="text-lg font-bold text-center"
+              >
+                {user.fullname}
+              </Text>
+              {user.document_verified && (
+                <MaterialIcons
+                  name="verified"
+                  size={20}
+                  className="!text-blue-500"
+                />
+              )}
             </View>
           </View>
 
-          <View className="dark:bg-slate-950/50 bg-slate-200 p-3 rounded-lg mb-5">
+          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
             <Text className="dark:text-light/50 text-dark/50 text-lg font-semibold mb-5">
               Account Settings
             </Text>
@@ -166,34 +187,69 @@ const setting = () => {
             </View>
           </View>
 
-          <View className="dark:bg-slate-950/50 bg-slate-200 p-3 rounded-lg mb-5">
+          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
             <Text className="dark:text-light/50 text-dark/50 text-lg font-semibold mb-5">
               Verifications
             </Text>
             <View>
-              <Link href="/" asChild>
+              {user.tier == 1 && (
+                <Link href="/Tier2Intro" asChild>
+                  <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
+                    <Text
+                      className="font-semibold "
+                      style={{ color: textColor }}
+                    >
+                      Upgrade Account
+                    </Text>
+
+                    <TouchableOpacity
+                      style={styles.pillContainer}
+                      className="bg-gray-500"
+                    >
+                      <Text className="text-light">Tier 1</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </Link>
+              )}
+
+              {user.tier == 2 && (
+                <Link href="/Tier3VerificationIntro" asChild>
+                  <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
+                    <Text
+                      className="font-semibold "
+                      style={{ color: textColor }}
+                    >
+                      Upgrade Account
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.pillContainer}
+                      className="bg-primary"
+                    >
+                      <Text className="text-light">Tier 2</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </Link>
+              )}
+
+              {user.tier == 3 && (
                 <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
                   <Text className="font-semibold " style={{ color: textColor }}>
-                    Document Verification
+                    Upgrade Account
                   </Text>
-                  {user.document_verified ? (
-                    <MaterialIcons
-                      size={20}
-                      style={{ color: "green" }}
-                      name="check-circle"
-                    />
-                  ) : (
-                    <MaterialIcons
-                      size={20}
-                      style={{ color: textColor }}
-                      name="chevron-right"
-                    />
-                  )}
+                  <TouchableOpacity
+                    style={styles.pillContainer}
+                    className="bg-primary"
+                  >
+                    <Text className="text-light">Tier 3</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </Link>
+              )}
 
               <Link href="/" asChild>
-                <TouchableOpacity disabled={user.email_verified} className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
+                <TouchableOpacity
+                  disabled={user.email_verified}
+                  className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl"
+                >
                   <Text className="font-semibold " style={{ color: textColor }}>
                     Email Verification
                   </Text>
@@ -212,26 +268,89 @@ const setting = () => {
                   )}
                 </TouchableOpacity>
               </Link>
-
             </View>
           </View>
 
-          <View className="dark:bg-slate-950/50 bg-slate-200 p-3 rounded-lg">
+          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-5">
             <Text className="dark:text-light/50 text-dark/50 text-lg font-semibold mb-5">
               Legal
             </Text>
             <View>
+              <SingleLink label="Our Service" href="/OurService" />
               <SingleLink label="Terms of Use" href="/TermsOfService" />
-              <SingleLink label="Service & Policy" href="/" />
+              <SingleLink label="Privacy & Policy" href="/PrivacyPolicy" />
+            </View>
+          </View>
+
+          <View className="dark:bg-dark bg-light p-3 rounded-lg">
+            <Text className="dark:text-light/50 text-dark/50 text-lg font-semibold mb-5">
+              Security
+            </Text>
+
+            <View>
+              <Link asChild href="/auth">
+                <TouchableOpacity className="flex-row items-center justify-between p-3 rounded-lg mb-5">
+                  <View className="flex-row gap-3 items-center">
+                    <MaterialIcons
+                      name="logout"
+                      size={20}
+                      style={{ color: textColor }}
+                    />
+                    <Text className="font-semibold dark:text-light">
+                      Sign Out
+                    </Text>
+                  </View>
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={20}
+                    style={{ color: textColor }}
+                  />
+                </TouchableOpacity>
+              </Link>
+
+              <Link asChild href="/DeleteAccount">
+                <TouchableOpacity className="flex-row items-center justify-between p-3 rounded-lg">
+                  <View className="flex-row gap-3 items-center">
+                    <MaterialIcons
+                      name="delete-forever"
+                      size={20}
+                      style={{ color: "red" }}
+                    />
+                    <Text className="font-semibold dark:text-light">
+                      Delete Account
+                    </Text>
+                  </View>
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={20}
+                    style={{ color: textColor }}
+                  />
+                </TouchableOpacity>
+              </Link>
             </View>
           </View>
         </View>
       </View>
+
+      {isLoading && <LoaderScreen />}
     </ScrollView>
   );
 };
 
 export default setting;
+
+const styles = StyleSheet.create({
+  pillContainer: {
+    borderRadius: 20, // Adjust as needed, half of the height
+    paddingVertical: 1,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillText: {
+    fontSize: 16,
+  },
+});
 
 export function SingleLink({ label, href }: { label: string; href: string }) {
   const { textColor } = useAppTheme();
@@ -256,4 +375,5 @@ const AccountSettingLinks = [
   { label: "Personal Information", href: "/EditInformation" },
   { label: "Change Password", href: "/ChangePassword" },
   { label: "Reset Pin", href: "/SetPin" },
+  { label: "Next of Kin", href: "/NextOfKin" },
 ];

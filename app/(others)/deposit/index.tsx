@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,21 @@ import {
   ScrollView,
   Pressable,
   Button,
+  RefreshControl,
 } from "react-native";
 import Colors from "@/lib/color";
 import { FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import Currency from "@/lib/currency";
 import { getToken } from "@/lib/authToken";
 import { useRouter } from "expo-router";
+import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
+import LoaderScreen from "@/components/LoaderScreen";
+import useAppTheme from "@/lib/appTheme";
 
 const CheckBox = ({
   label,
   isChecked,
-  onPress
+  onPress,
 }: {
   label: string;
   isChecked: boolean;
@@ -47,10 +51,13 @@ const CheckBox = ({
 };
 
 const DepositIndex = () => {
+  const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [payMethods, setPayMethods] = useState<{ name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const [fetching, setFetching] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [form, setForm] = useState({
     amount: 0,
     channel: "BTC",
@@ -58,6 +65,7 @@ const DepositIndex = () => {
 
   async function getCrypto() {
     try {
+      setFetching(true);
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/admin/crypto-channels`
       );
@@ -67,6 +75,8 @@ const DepositIndex = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setFetching(false);
     }
   }
 
@@ -75,9 +85,9 @@ const DepositIndex = () => {
   }, []);
 
   const Deposit = async () => {
-    setIsLoading(false);
+    setIsLoading(true);
     const token = await getToken();
-    const q = form
+    const q = form;
     try {
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/transaction/deposit`,
@@ -85,14 +95,14 @@ const DepositIndex = () => {
           method: "POST",
           body: JSON.stringify(form),
           headers: {
-            "Authorization": `Bearer ${await token ?? null}`,
+            Authorization: `Bearer ${(await token) ?? null}`,
           },
         }
       );
       const res = await req.json();
 
       if (res.success) {
-        const query = `amount=${q.amount}&channel=${q.channel}&id=${res.id}`
+        const query = `amount=${q.amount}&channel=${q.channel}&id=${res.id}`;
         setForm({
           amount: 0,
           channel: "BTC",
@@ -108,10 +118,24 @@ const DepositIndex = () => {
     }
   };
 
- 
+  const refresh = useCallback(async () => {
+    await getCrypto();
+    setRefreshing(false);
+  }, []);
 
   return (
-    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight p-5">
+    <ScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh}
+          progressBackgroundColor={bgColor}
+          colors={[textColor]}
+          tintColor={textColor}
+        />
+      }
+      className="flex-1 dark:bg-bgDark bg-bgLight p-5"
+    >
       <View className="flex-1 justify-center">
         <View className="mb-12 mt-5">
           <Text className="dark:text-light mb-3 px-1">Enter Amount</Text>
@@ -158,23 +182,17 @@ const DepositIndex = () => {
               <Text className="dark:text-light text-lg">{form.channel}</Text>
             </View>
           </View>
-          <TouchableOpacity
-            className="!bg-primary h-16 rounded-lg flex-row justify-center items-center gap-x-5"
-            disabled={isLoading || form.amount < 1}
-            onPress={() => Deposit()}
-          >
-            {isLoading && (
-              <FontAwesome5
-                name="spinner"
-                color="white"
-                size={25}
-                className="animate-spin"
-              />
-            )}
-            <Text className="text-light">Make Payment</Text>
-          </TouchableOpacity>
+
+          <SubmitButtonWrapper
+            label="Make Deposit"
+            errorMessage={error}
+            isLoading={isLoading}
+            onSubmit={() => Deposit()}
+          />
         </View>
       </View>
+
+      {fetching && <LoaderScreen />}
     </ScrollView>
   );
 };

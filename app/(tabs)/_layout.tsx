@@ -9,18 +9,22 @@ const TabLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: { backgroundColor: bgColor, borderTopWidth: 0 },
-        headerStyle: { backgroundColor: bgColor },
+        tabBarStyle: { backgroundColor: primaryColor,  borderTopWidth: 0,  },
         headerTintColor: textColor,
+        tabBarLabelStyle:{
+          color: 'white'
+        },
+        tabBarActiveTintColor: primaryColor,
+        tabBarActiveBackgroundColor: bgColor
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
           title: "Home",
-          tabBarLabelStyle: { color: textColor },
+          
           tabBarIcon: () => (
-            <FontAwesome5 name="home" size={24} color={textColor} />
+            <FontAwesome5 name="home" size={24} color='white' />
           ),
           headerShown: false,
           tabBarAccessibilityLabel: "Dashboard",
@@ -31,7 +35,7 @@ const TabLayout = () => {
         name="transactions"
         options={{
           title: "Transactions",
-          tabBarLabelStyle: { color: textColor },
+          
           headerStyle: {
             backgroundColor: primaryColor
           },
@@ -40,7 +44,7 @@ const TabLayout = () => {
             color: 'white'
           },
           tabBarIcon: () => (
-            <FontAwesome5 name="history" size={24} color={textColor} />
+            <FontAwesome5 name="history" size={24} color='white' />
           ),
           tabBarAccessibilityLabel: "History",
         }}
@@ -50,7 +54,6 @@ const TabLayout = () => {
         name="customer-care"
         options={{
           title: "Customer Support",
-          tabBarLabelStyle: { color: textColor },
           headerStyle: {
             backgroundColor: primaryColor
           },
@@ -59,7 +62,7 @@ const TabLayout = () => {
             color: 'white'
           },
           tabBarIcon: () => (
-            <MaterialIcons name="support-agent" size={24} color={textColor} />
+            <MaterialIcons name="support-agent" size={24} color='white' />
           ),
           
           tabBarAccessibilityLabel: "customer care",
@@ -70,9 +73,8 @@ const TabLayout = () => {
         name="setting"
         options={{
           title: "Setting",
-          tabBarLabelStyle: { color: textColor },
           tabBarIcon: () => (
-            <MaterialIcons name="settings" size={24} color={textColor} />
+            <MaterialIcons name="settings" size={24} color='white' />
           ),
           headerShown: false,
           tabBarAccessibilityLabel: "History",

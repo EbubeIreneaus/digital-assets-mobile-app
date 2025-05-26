@@ -8,12 +8,14 @@ import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
 import { getToken } from "@/lib/authToken";
 import Toast from "react-native-simple-toast";
 import { router } from "expo-router";
+import LoaderScreen from "@/components/LoaderScreen";
 
 const screenHeight = Dimensions.get("window").height;
 const EditInformation = () => {
   const { textColor } = useAppTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fetching, setFetching] = useState(true)
   const [user, setUser] = useState({
     fullname: "",
     email: "",
@@ -24,6 +26,7 @@ const EditInformation = () => {
   useEffect(() => {
     async function FetchData() {
       const token = await getToken();
+      setFetching(true)
       try {
         const req = await fetch(
           `${process.env.EXPO_PUBLIC_API_URL}/api/auth/personal-information`,
@@ -40,6 +43,8 @@ const EditInformation = () => {
         Toast.show("unknown server error", Toast.LONG);
       } catch (error) {
         Toast.show("unexpected error, try again", Toast.LONG);
+      }finally{
+        setFetching(false)
       }
     }
     FetchData();
@@ -80,6 +85,7 @@ const EditInformation = () => {
 
   return (
     <ScrollView className="dark:bg-slate-900 bg-slate-200">
+      {fetching && <LoaderScreen />}
       <View style={{ paddingVertical: 40 }} className="px-4">
         <InputField label="fullname" value={user.fullname} onTextChange={(val) => handleTextChange('fullname', val)} />
         <InputField
@@ -91,7 +97,7 @@ const EditInformation = () => {
         <InputField label="phone" value={user.phone} onTextChange={(val) => handleTextChange('phone', val)} />
         <View
           style={{ position: "relative" }}
-          className="border dark:bg-slate-950 bg-slate-300 rounded-md mb-8"
+          className=" dark:bg-slate-950 bg-slate-300 rounded-md mb-8"
         >
           <Text
             style={{ position: "absolute", top: -8 }}
@@ -146,7 +152,7 @@ export function InputField({
   return (
     <View
       style={{ position: "relative" }}
-      className="border dark:bg-slate-950 bg-slate-300 rounded-md mb-8"
+      className=" dark:bg-bgDark bg-bgLight rounded-md mb-8"
     >
       <Text
         style={{ position: "absolute", top: -8 }}

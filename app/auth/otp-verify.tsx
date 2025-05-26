@@ -53,6 +53,7 @@ const OTPVerify = () => {
 
     try {
       const token = await getToken()
+      console.log(token)
       waitTime();
       await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/auth/send_otp_code/`,

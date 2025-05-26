@@ -1,4 +1,5 @@
 import AmountSection from "@/components/AmountSection";
+import LoaderScreen from "@/components/LoaderScreen";
 import PinModalComponent from "@/components/PinModalComponent";
 import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
 import useAppTheme from "@/lib/appTheme";
@@ -16,17 +17,21 @@ import {
   TextInput,
   Dimensions,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
+import { set } from "zod";
 
 const screenHeight = Dimensions.get("window").height;
 
 const SwapPlan = () => {
   const { plan } = useLocalSearchParams();
-  const { textColor } = useAppTheme();
+  const { textColor, bgColor } = useAppTheme();
   const [error, setError] = useState<null | string>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [plans, setPlans] = useState([]);
   const [authenticate, setAuthenticate] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [form, setForm] = useState({
     amount: "0",
@@ -36,6 +41,7 @@ const SwapPlan = () => {
 
   async function fetch_plans() {
     try {
+      setFetching(true);
       const token = await getToken();
       if (!token) {
         return router.replace("/auth/sign-in");
@@ -54,6 +60,7 @@ const SwapPlan = () => {
     } catch (error) {
       return ToastAndroid.show("server error", ToastAndroid.SHORT);
     } finally {
+      setFetching(false);
     }
   }
 
@@ -109,12 +116,27 @@ const SwapPlan = () => {
   }, []);
 
   return (
-    <ScrollView className="dark:bg-bgDark bg-bgLight">
-      <PinModalComponent
-        isVisible={authenticate}
-        onClose={() => setAuthenticate(false)}
-        onValidate={() => ValidateAndSubmit()}
-      />
+    <ScrollView
+      className="dark:bg-bgDark bg-bgLight"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={async () => {
+            await fetch_plans();
+            setRefreshing(false);
+          }}
+          progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor}
+        />
+      }
+    >
+      {authenticate && (
+        <PinModalComponent
+          isVisible={authenticate}
+          onClose={() => setAuthenticate(false)}
+          onValidate={() => ValidateAndSubmit()}
+        />
+      )}
+      {fetching && <LoaderScreen />}
       <View
         className="dark:bg-dark bg-light flex-1 px-5 py-14 mx-2 rounded-xl"
         style={{ minHeight: screenHeight }}
@@ -122,7 +144,7 @@ const SwapPlan = () => {
         <View className="mb-10">
           <View className="mb-5">
             <Text className="dark:text-light text-lg mb-3 px-2">Source</Text>
-            <View className="dark:bg-slate-950/50 bg-slate-200">
+            <View className="dark:bg-bgDark bg-bgLight">
               <Picker
                 style={{ color: textColor }}
                 dropdownIconColor={textColor}
@@ -144,7 +166,7 @@ const SwapPlan = () => {
             <Text className="dark:text-light text-lg mb-3 px-2">
               Destination
             </Text>
-            <View className="dark:bg-slate-950/50 bg-slate-200">
+            <View className="dark:bg-bgDark bg-bgLight">
               <Picker
                 style={{ color: textColor }}
                 dropdownIconColor={textColor}

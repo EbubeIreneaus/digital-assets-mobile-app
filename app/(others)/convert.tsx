@@ -5,7 +5,6 @@ import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ToastAndroid,
   View,
   Text,
   ScrollView,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import Colors from "@/lib/color";
 import { FontAwesome } from "@expo/vector-icons";
+import Toast from 'react-native-simple-toast'
 
 const Convert = () => {
   const { textColor } = useAppTheme();
@@ -45,18 +45,18 @@ const Convert = () => {
 
       const res = await req.json();
       if (res.status == "failed") {
-        return ToastAndroid.show(
+        return Toast.show(
           "Unkown server error, try again",
-          ToastAndroid.LONG
+          Toast.LONG
         );
       }
       delete res.profile;
       
       setCryptos(res);
     } catch (error) {
-      return ToastAndroid.show(
+      return Toast.show(
         "Unkown server error, try again",
-        ToastAndroid.LONG
+        Toast.LONG
       );
     }
   }

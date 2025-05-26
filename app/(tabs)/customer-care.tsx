@@ -36,7 +36,7 @@ const CustomeCare = () => {
                 </View>
                 <View>
                   <Text className='dark:text-light text-sm mb-1'>Email Account</Text>
-                  <Text className='text-xl font-bold dark:text-light'>support@digitalassets.com</Text>
+                  <Text className='text-xl font-bold dark:text-light'>support@digitalassetsweb.com</Text>
                 </View>
               </View>
 

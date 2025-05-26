@@ -47,6 +47,7 @@ const Transfer = () => {
   }
 
   function PROCEED(){
+    setError(null)
     if (form.user == '' || !reciever) {
       return setError('Invelid account details')
     }
@@ -72,6 +73,7 @@ const Transfer = () => {
                 placeholderTextColor={textColor}
                 className="dark:bg-dark bg-light dark:text-light h-16 px-5 rounded-xl mb-5"
                 onChangeText={(val) => {
+                  setError(null)
                   setForm({ ...form, user: val })
                   if (reciever) {
                     setReciever(null)

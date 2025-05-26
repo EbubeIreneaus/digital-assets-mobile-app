@@ -16,6 +16,7 @@ import { COUNTRIES } from "@/lib/countryList";
 import z, { Schema } from "zod";
 import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
 
 const InfoSchema = z.object({
   first_name: z.string().min(1, { message: "firstname is required" }),
@@ -102,6 +103,8 @@ const SignUp = () => {
     } catch (error) {
       ToastAndroid.show("server error, try again.", ToastAndroid.LONG);
       return false;
+    }finally {
+      setIsLoading(false);
     }
   }
 
@@ -115,7 +118,7 @@ const SignUp = () => {
       case 2:
         res = InfoSchema.safeParse(infoData);
         if (res.error) {
-          alert(res.error.issues[0].message);
+          setError(res.error.issues[0].message);
         } else {
           await check_email_exist() && setStep(3)
         }
@@ -124,7 +127,7 @@ const SignUp = () => {
       case 3:
         res = PasswordSchema.safeParse(psw);
         if (res.error) {
-          alert(res.error.issues[0].message);
+          setError(res.error.issues[0].message);
         } else {
           submit();
         }
@@ -335,55 +338,7 @@ const SignUp = () => {
         </ScrollView>
       )}
 
-      <View
-        style={[
-          styles.nextContainer,
-          {
-            backgroundColor:
-              colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
-          },
-        ]}
-      >
-        {error ? (
-          <Text
-            style={[
-              styles.nextText,
-              {
-                color: "red",
-                backgroundColor:
-                  colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
-              },
-            ]}
-          >
-            {error}.
-          </Text>
-        ) : (
-          <Text
-            style={[
-              styles.nextText,
-              {
-                color: textColor,
-                backgroundColor:
-                  colorScheme == "dark" ? Colors.bgDark : Colors.bgLight,
-              },
-            ]}
-          >
-            By tapping "Next", you agree to our{" "}
-            <Link href="/">
-              <Text style={styles.linkText}>Terms of Service</Text>
-            </Link>{" "}
-            and{" "}
-            <Link href="/">
-              <Text style={styles.linkText}>Privacy Policy</Text>
-            </Link>
-            .
-          </Text>
-        )}
-
-        <Pressable style={styles.nextButton} onPress={nextStep}>
-          <Text className="text-light">Next</Text>
-        </Pressable>
-      </View>
+      <SubmitButtonWrapper isLoading={isLoading} label="Next" errorMessage={error} onSubmit={() => nextStep()} />
     </View>
   );
 };

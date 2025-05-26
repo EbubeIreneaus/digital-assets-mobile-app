@@ -11,8 +11,8 @@ type props = {
 const TransactionItem = ({item}: any) => {
   return (
     <View className="mx-3 mb-3">
-      <Link href="/" asChild>
-        <TouchableOpacity className="flex-row justify-between items-center  py-4 px-4 rounded-md">
+      <Link href={`/TransactionDetails?id=${item.id}`} asChild>
+        <TouchableOpacity className="flex-row justify-between items-center  py-4 px-2 rounded-md">
           <View className="flex-row items-center gap-5">
             <View className=" items-center justify-center rounded-full">
               {item.type == 'deposit' && <MaterialIcons name="add" size={20} color='green'  />}

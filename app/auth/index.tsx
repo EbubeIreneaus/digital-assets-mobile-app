@@ -1,28 +1,68 @@
 import { Link } from "expo-router";
-import React from "react";
-import { Text, View, StyleSheet, Image} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, View, StyleSheet, Image } from "react-native";
 import Colors from "@/lib/color";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PagerView from "react-native-pager-view";
+import useAppTheme from "@/lib/appTheme";
 
 const AuthIndex = () => {
+  const {textColor, primaryColor} = useAppTheme()
+  const [slide, setSlide] = useState(0)
+  // clear token incase of signout
+  useEffect(() => {
+    async function clearToken() {
+      if (await AsyncStorage.getItem("token")) {
+        await AsyncStorage.removeItem("token");
+      }
+    }
+
+    clearToken();
+  }, []);
+
   return (
-    <View className="bg-bgLight dark:bg-bgDark flex-1 justify-center items-center">
-      <View className="flex-1 justify-center items-center">
+    <View className="bg-bgLight dark:bg-bgDark flex-1">
+      <View className="justify-center items-center" style={{flex: 1/3}}>
         <Image
-          source={require('@/assets/images/logo-tr.png')}
-          style={{ width: 230, height: 180 }}
+          source={require("@/assets/images/icon-tr.png")}
+          style={{ width: 120, height: 120 }}
         />
-        <Text
-          className="text-primary font-semibold text-center text-xl"
-        >
-          Welcome to Digital Assets
-        </Text>
-      <View>
-
       </View>
-      </View>
-      
 
-      <View style={[{ flex: 1 / 3 }]}>
+      <View className="px-3" style={{flex: 1/ 3}}>
+        <PagerView  onPageScroll={(pos) => setSlide(pos.nativeEvent.position)} style={{ height: 300 }} pageMargin={10} initialPage={slide}>
+          <View key="1" className="rounded-xl">
+            <Image
+              source={require("@/assets/images/extra/stock.jpg")}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              className="rounded-xl"
+            />
+          </View>
+
+          <View key="2" className="rounded-xl">
+            <Image
+              source={require("@/assets/images/extra/crypto.jpg")}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              className="rounded-xl"
+            />
+          </View>
+
+           <View key="3" className="rounded-xl">
+            <Image
+              source={require("@/assets/images/extra/realestate.jpg")}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              className="rounded-xl"
+            />
+          </View>
+        </PagerView>
+        <View className="flex-row justify-center gap-x-3 py-3 mt-1">
+          <View style={[styles.indicator, {backgroundColor: slide == 0?textColor: primaryColor}]} ></View>
+           <View style={[styles.indicator, {backgroundColor: slide == 1?textColor: primaryColor}]} ></View>
+            <View style={[styles.indicator, {backgroundColor: slide == 2?textColor: primaryColor}]} ></View>
+        </View>
+      </View>
+
+      <View style={[{ flex: 1 / 3 }]} className="items-center justify-end pb-8">
         <Link
           href="/auth/sign-up"
           style={styles.link}
@@ -69,4 +109,9 @@ const styles = StyleSheet.create({
     textAlignVertical: "center",
     borderRadius: 5,
   },
+  indicator: {
+    width: 22,
+    height: 20,
+    borderRadius: 50
+  }
 });

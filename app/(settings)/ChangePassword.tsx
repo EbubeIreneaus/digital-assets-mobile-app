@@ -62,21 +62,21 @@ const ChangePassword = () => {
     }
   }
   return (
-    <View className='flex-1 dark:bg-slate-900 bg-slate-200  justify-center px-3'>
-          <View className='py-10 px-5 dark:bg-slate-950 bg-slate-300 rounded-lg'>
+    <View className='flex-1 dark:bg-bgDark bg-bgLight  justify-center px-3'>
+          <View className='py-10 px-5 dark:bg-dark bg-light rounded-lg'>
             <View className='mb-5'>
               <Text className='dark:text-light mb-4 text-lg'>Current Password</Text>
-              <TextInput className='p-4 rounded-lg dark:bg-slate-800 bg-slate-100 dark:text-light' value={form.current} secureTextEntry={true} onChangeText={(val) => handleTextChange('current', val)} />
+              <TextInput className='p-4 rounded-lg dark:bg-bgDark bg-bgLight dark:text-light' value={form.current} secureTextEntry={true} onChangeText={(val) => handleTextChange('current', val)} />
             </View>
 
              <View className='mb-5'>
               <Text className='dark:text-light mb-4 text-lg'>New Password</Text>
-              <TextInput className='p-4 rounded-lg dark:bg-slate-800 bg-slate-100 dark:text-light' value={form.new} secureTextEntry={true} onChangeText={(val) => handleTextChange('new', val)}/>
+              <TextInput className='p-4 rounded-lg dark:bg-bgDark bg-bgLight dark:text-light' value={form.new} secureTextEntry={true} onChangeText={(val) => handleTextChange('new', val)}/>
             </View>
 
              <View className='mb-5'>
               <Text className='dark:text-light mb-4 text-lg'>Confirm Password</Text>
-              <TextInput className='p-4 rounded-lg dark:bg-slate-800 bg-slate-100 dark:text-light' value={form.confirm} secureTextEntry={true} onChangeText={(val) => handleTextChange('confirm', val)}/>
+              <TextInput className='p-4 rounded-lg dark:bg-bgDark bg-bgLight dark:text-light' value={form.confirm} secureTextEntry={true} onChangeText={(val) => handleTextChange('confirm', val)}/>
             </View>
 
             <View className='mb-5'>

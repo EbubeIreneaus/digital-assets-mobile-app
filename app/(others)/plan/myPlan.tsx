@@ -1,28 +1,31 @@
 import InvestmentMiniCard from "@/components/InvestmentMiniCard";
 import { getToken } from "@/lib/authToken";
 import { Link, router, useLocalSearchParams, useNavigation } from "expo-router";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  ToastAndroid,
   ScrollView,
   Image,
   FlatList,
+  RefreshControl,
 } from "react-native";
-import { useVideoPlayer, VideoView } from "expo-video";
+import Toast from 'react-native-simple-toast'
 import Currency from "@/lib/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import TransactionItem from "@/components/TransactionItem";
+import useAppTheme from "@/lib/appTheme";
 
 const MyPlan = () => {
   const { p } = useLocalSearchParams();
+    const { bgColor, textColor, backgroundColor } = useAppTheme();
   const navigation = useNavigation();
   const [transactions, setTransactions] = useState([]);
   const [plan, setPlan] = useState<any>(null);
   const [account, setAccount] = useState({ balance: 0, planBalance: 0 });
+  const [refreshing, setRefreshing] = useState(false)
 
 
 
@@ -49,9 +52,9 @@ const MyPlan = () => {
         return true;
       }
 
-      ToastAndroid.show("server error occured", ToastAndroid.LONG);
+      Toast.show("server error occured", Toast.LONG);
     } catch (error) {
-      ToastAndroid.show("server error occured", ToastAndroid.LONG);
+      Toast.show("server error occured", Toast.LONG);
     }
   }
 
@@ -65,8 +68,13 @@ const MyPlan = () => {
     });
   }, [navigation, plan]);
 
+ const refresh = useCallback(async () => {
+    await fetchData()
+    setRefreshing(false)
+  }, [])
+
   return (
-    <ScrollView className=" dark:bg-bgDark bg-bgLight ">
+    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight " refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}>
       <View className="m-3 rounded-xl dark:bg-dark bg-light px-4">
         <View className="flex-1 w-full py-10">
           <Image
@@ -105,7 +113,7 @@ const MyPlan = () => {
             href={`/plan/BuyPlan?plan=${plan?.name}&planLabel=${plan?.label}&planIcon=${plan?.icon}&planRoi=${plan?.roi}&balance=${account.balance}`}
             asChild
           >
-            <TouchableOpacity className="dark:bg-slate-950/50 bg-slate-200 py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
+            <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
               <MaterialIcons name="payments" size={24} color="blue" />
               <Text className="dark:text-light">Buy</Text>
             </TouchableOpacity>
@@ -115,7 +123,7 @@ const MyPlan = () => {
             href={`/plan/SellPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${account.planBalance}`}
             asChild
           >
-            <TouchableOpacity className="dark:bg-slate-950/50 bg-slate-200 py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
+            <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
               <MaterialIcons name="attach-money" size={24} color="purple" />
               <Text className="dark:text-light">Sell</Text>
             </TouchableOpacity>
@@ -125,7 +133,7 @@ const MyPlan = () => {
             href={`/plan/SwapPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${account.planBalance}`}
             asChild
           >
-            <TouchableOpacity className="dark:bg-slate-950/50 bg-slate-200 py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
+            <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
               <MaterialIcons
                 name="currency-exchange"
                 size={24}

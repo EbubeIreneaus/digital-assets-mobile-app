@@ -83,13 +83,11 @@ const Checkout = () => {
         }
     }
 
-
-
     useEffect(() =>{
       getWallet()
     }, [])
   return (
-    <View className="bg-bgLight dark:bg-bgDark flex-1 justify-center">
+    <View  className="bg-bgLight dark:bg-bgDark flex-1 justify-center">
       <View className="dark:bg-dark bg-light rounded-xl mx-2 px-8 py-10">
         <Text className="text-2xl dark:text-light mb-10 font-extrabold ">PAYMENT INFORMATION</Text>
         <View className="shadow-inner flex-row gap-x-5 mb-6">

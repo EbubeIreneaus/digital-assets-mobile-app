@@ -1,3 +1,6 @@
+import AmountSection from "@/components/AmountSection";
+import PinModalComponent from "@/components/PinModalComponent";
+import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
 import useAppTheme from "@/lib/appTheme";
 import { getToken } from "@/lib/authToken";
 import Currency from "@/lib/currency";
@@ -18,26 +21,42 @@ const Transfer002 = () => {
   const { fullname, email, available_balance, balance } =
     useLocalSearchParams();
   const [error, setError] = useState<null | string>(null);
+  const [authenticate, setAuthenticate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
-  const [source, setSource] = useState<'balance' | 'available_balance'| ''>("");
+  const [source, setSource] = useState<"balance" | "available_balance" | "">(
+    ""
+  );
+
+  function ValidateAndAuthenticate(){
+    if (Number(amount) < 1) {
+      return setError('Please enter amount')
+    }
+
+    if (source == '' ) {
+      return setError('No source selected for transfer')
+    }
+
+    setAuthenticate(true)
+  }
 
   async function submit() {
     const token = await getToken();
     if (!token) {
-      return router.push("/auth/sign-in");
+      return router.replace("/auth/sign-in");
     }
 
     try {
       setIsLoading(true);
+      setAuthenticate(false)
       setError(null);
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/account/transfer`,
         {
           method: "POST",
-          body: JSON.stringify({ 'to': email, amount: Number(amount), source }),
+          body: JSON.stringify({ to: email, amount: Number(amount), source }),
           headers: {
-            Authorization: `Bearer ${token}`,  
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -46,7 +65,7 @@ const Transfer002 = () => {
 
       if (res.success) {
         ToastAndroid.show("Transfer successful", ToastAndroid.LONG);
-        return router.push("/transfer");
+        return router.replace("/transfer");
       }
       setError(res.msg);
     } catch (error) {
@@ -56,19 +75,19 @@ const Transfer002 = () => {
     }
   }
 
-  useEffect(() => {
-    if (source == "" && Number(amount) <= Number(available_balance)) {
-      setSource("available_balance");
-    } else if (
-      source == "" &&
-      Number(amount) > Number(available_balance) &&
-      Number(amount) <= Number(balance)
-    ) {
-      setSource("balance");
-    } else {
-      setSource("");
-    }
-  }, [amount]);
+  // useEffect(() => {
+  //   if (source == "" && Number(amount) <= Number(available_balance)) {
+  //     setSource("available_balance");
+  //   } else if (
+  //     source == "" &&
+  //     Number(amount) > Number(available_balance) &&
+  //     Number(amount) <= Number(balance)
+  //   ) {
+  //     setSource("balance");
+  //   } else {
+  //     setSource("");
+  //   }
+  // }, [amount]);
 
   return (
     <View className="flex-1 dark:bg-bgDark bg-bgLight">
@@ -86,36 +105,20 @@ const Transfer002 = () => {
           </View>
 
           <View className="">
-            <View>
-              <TextInput
-                inputMode="numeric"
-                placeholder="0.00"
-                value={amount}
-                onChangeText={(val) => setAmount(val)}
-                placeholderTextColor={textColor}
-                className="py-4 px-3 dark:bg-slate-950/50 bg-slate-200 dark:text-light rounded-lg"
-              />
-            </View>
-            <View className="flex-row gap-4 flex-wrap py-5">
-              {[100, 200, 500, 1000, 2000, 5000, 10000].map((p) => (
-                <TouchableOpacity
-                  key={p}
-                  className="py-4 px-6 dark:bg-slate-950/50 bg-slate-300 rounded-xl"
-                  onPress={() => setAmount(p.toString())}
-                >
-                  <Text className="dark:text-slate-100">{Currency(p)}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <AmountSection
+              inputValue={amount}
+              onButtonClick={(val) => setAmount(val)}
+              onTextChange={(val) => setAmount(val)}
+            />
           </View>
-          <Text className="text-light">{source}</Text>
+
           <View className="my-10">
             <TouchableOpacity
               disabled={Number(amount) > Number(available_balance)}
               onPress={() => {
                 setSource("available_balance");
               }}
-              className="flex-row justify-between items-center dark:bg-slate-950/50 bg-slate-300/50 rounded-xl px-4 py-5 mb-5"
+              className="flex-row justify-between items-center dark:bg-slate-800 bg-slate-100 rounded-xl px-4 py-5 mb-5"
             >
               <View className="flex-row items-center gap-x-5">
                 <MaterialIcons
@@ -146,7 +149,7 @@ const Transfer002 = () => {
             <TouchableOpacity
               onPress={() => setSource("balance")}
               disabled={Number(amount) > Number(balance)}
-              className="flex-row justify-between items-center dark:bg-slate-950/50 bg-slate-300/50 rounded-xl px-4 py-5"
+              className="flex-row justify-between items-center dark:bg-slate-800 bg-slate-100 rounded-xl px-4 py-5"
             >
               <View className="flex-row items-center gap-x-5">
                 <MaterialIcons
@@ -170,28 +173,19 @@ const Transfer002 = () => {
               </View>
             </TouchableOpacity>
           </View>
-
-          <View className="mt-10">
-            <Text className="mb-3 text-red-500 text-center capitalize font-semibold">
-              {error ? error : ""}{" "}
-            </Text>
-            <TouchableOpacity
-              onPress={() => submit()}
-              className="bg-primary flex-row justify-center items-center gap-x-5 py-4 rounded-xl"
-            >
-              {isLoading && (
-                <FontAwesome
-                  name="spinner"
-                  size={20}
-                  color="white"
-                  className="!animat-spin"
-                />
-              )}
-              <Text className="text-light text-lg font-semibold">
-                Sell Plan
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {authenticate && (
+            <PinModalComponent
+              isVisible={authenticate}
+              onClose={() => setAuthenticate(false)}
+              onValidate={() => submit()}
+            />
+          )}
+          <SubmitButtonWrapper
+            label="Transfer"
+            errorMessage={error}
+            isLoading={isLoading}
+            onSubmit={() => ValidateAndAuthenticate()}
+          />
         </View>
       </View>
     </View>

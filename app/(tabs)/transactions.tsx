@@ -1,13 +1,19 @@
+import LoaderScreen from "@/components/LoaderScreen";
 import TransactionItem from "@/components/TransactionItem";
+import useAppTheme from "@/lib/appTheme";
 import { getToken } from "@/lib/authToken";
 import { Picker } from "@react-native-picker/picker";
-import React, { useEffect, useState } from "react";
-import { Dimensions, FlatList, ToastAndroid, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Dimensions, FlatList, View, Text, RefreshControl } from "react-native";
+import Toast from 'react-native-simple-toast'
 
 const screenHeight = Dimensions.get("window").height - 100;
 
 const Transactions = () => {
+    const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [transactions, setTransactions] = useState([]);
+  const [fetching, setFetching] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [query, setQuery] = useState({
     category: "all",
     status: "all",
@@ -16,7 +22,8 @@ const Transactions = () => {
   const fetchData = async () => {
     try {
       const token = await getToken();
-      const q = `category=${query.category}&status=${query.status}`
+      setFetching(true);
+      const q = `category=${query.category}&status=${query.status}`;
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/transaction/all?${q}`,
         {
@@ -31,10 +38,12 @@ const Transactions = () => {
         setTransactions(res.transactions);
         return true;
       }
-      ToastAndroid.show("unknown server error", ToastAndroid.LONG);
+      Toast.show("unknown server error", Toast.LONG);
     } catch (error: any) {
-      ToastAndroid.show("unknown server error", ToastAndroid.LONG);
+      Toast.show("unknown server error", Toast.LONG);
       console.log(error.message);
+    }finally{
+      setFetching(false)
     }
   };
 
@@ -42,21 +51,28 @@ const Transactions = () => {
     fetchData();
   }, [query]);
 
+  const onRefresh = useCallback(async() => {
+    await fetchData()
+    setRefreshing(false)
+  }, [])
+
   return (
     <View className="dark:bg-bgDark bg-bgLight flex-1 justify-center">
+      {fetching && <LoaderScreen />}
       <FlatList
         data={transactions}
         renderItem={({ item }) => <TransactionItem item={item} key={item.id} />}
         keyExtractor={(item: any) => item.id}
         style={{ minHeight: screenHeight }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}
         className="dark:bg-dark bg-light mx-3 rounded-xl py-10"
         ListHeaderComponent={
           <View className="p-3 mb-5">
             <View className="flex-row gap-x-5">
-              <View className="dark:bg-slate-950 bg-slate-200 rounded-md flex-1">
+              <View className="dark:bg-bgDark bg-bgLight rounded-md flex-1">
                 <Picker
-                  style={{ color: "white", height: 50 }}
-                  dropdownIconColor="white"
+                  style={{ color: textColor, height: 50 }}
+                  dropdownIconColor={textColor}
                   selectedValue={query.status}
                   onValueChange={(val) => setQuery({ ...query, status: val })}
                   className="f"
@@ -72,15 +88,32 @@ const Transactions = () => {
                 </Picker>
               </View>
 
-              <View className='dark:bg-slate-950 bg-slate-200 rounded-xl flex-1'>
-                <Picker style={{ color: 'white' }} onValueChange={(val) => setQuery({...query, category: val})} dropdownIconColor='white' selectedValue={query.category} className='f'>
-                  {
-                    Categories.map((cat: any) => <Picker.Item value={cat.name} label={cat.label} key={cat.name} />)
-                  }
+              <View className="dark:bg-bgDark bg-bgLight rounded-xl flex-1">
+                <Picker
+                  style={{ color: textColor }}
+                  onValueChange={(val) => setQuery({ ...query, category: val })}
+                  dropdownIconColor={textColor}
+                  selectedValue={query.category}
+                  className="f"
+                >
+                  {Categories.map((cat: any) => (
+                    <Picker.Item
+                      value={cat.name}
+                      label={cat.label}
+                      key={cat.name}
+                    />
+                  ))}
                 </Picker>
               </View>
             </View>
           </View>
+        }
+        ListEmptyComponent={
+          <View className="min-h-[300px] justify-center items-center">
+                          <Text className="text-primary text-lg font-semibold">
+                            No Recent transaction
+                          </Text>
+                        </View>
         }
       />
     </View>

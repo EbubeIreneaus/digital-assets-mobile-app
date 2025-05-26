@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Deposit Received – Awaiting Confirmation</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,90 +10,60 @@
       margin: 0;
       padding: 0;
     }
-    .email-container {
-      max-width: 600px;
-      margin: auto;
+    .container {
       background-color: #ffffff;
-      border: 1px solid #ddd;
-      padding: 20px;
-      color: #1D3B53;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .header {
-      text-align: center;
-      padding-bottom: 20px;
+    h2 {
+      color: #2a9d8f;
     }
-    .header h2 {
-      margin: 0;
-      color: #1D3B53;
+    .details {
+      margin-top: 20px;
+      line-height: 1.6;
     }
-    .transaction-details {
-      margin-bottom: 30px;
-    }
-    .transaction-details table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .transaction-details td {
-      padding: 8px 0;
+    .footer {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #888;
     }
     .label {
       font-weight: bold;
-      color: #1D3B53;
     }
-    .wallet-section {
-      text-align: center;
-      margin: 30px 0;
-    }
-    .wallet-address {
-      font-weight: bold;
-      word-break: break-all;
-      background: #f0f0f0;
-      padding: 10px;
-      display: inline-block;
-      border-radius: 4px;
-      margin-top: 10px;
-      color: #1D3B53;
-    }
-    .footer {
-      font-size: 14px;
-      text-align: center;
-      color: #666;
-      margin-top: 30px;
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="email-container">
-    <div class="header">
-      <h2>Deposit Received – Awaiting Confirmation</h2>
+  <div class="container">
+    <h2>Flight Booking Confirmation</h2>
+
+    <p>Hello {{name}},</p>
+
+    <p>We’ve received your flight booking request. One of our agents will get back to you shortly to confirm the details and proceed with the next steps.</p>
+
+    <div class="details">
+      <p><span class="label">Trip Type:</span> {{'Return' if instance.trip_type == 'return' else 'One Way' if instance.trip_type == 'oneway' else 'Multi City'}} Trip</p>
+      <p><span class="label">From:</span> {{instance.from_city}}</p>
+      <p><span class="label">To:</span> {{to}}</p>
+      <p><span class="label">Departure Date:</span> {{departureDate}}</p>
+      {{#if returnDate}}
+        <p><span class="label">Return Date:</span> {{returnDate}}</p>
+      {{/if}}
+      <p><span class="label">Passengers & Class:</span> {{passengerClass}}</p>
+      <p><span class="label">Booked Using Avios:</span> {{useAvios}}</p>
     </div>
 
-    <div class="transaction-details">
-      <table>
-        <tr>
-          <td class="label">Date & Time:</td>
-          <td>May 11, 2025 – 2:45 PM</td>
-        </tr>
-        <tr>
-          <td class="label">Amount:</td>
-          <td>₦50,000.00</td>
-        </tr>
-        <tr>
-          <td class="label">Channel:</td>
-          <td>Crypto Wallet (USDT)</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="wallet-section">
-      <p><strong>Scan QR Code to Make Payment:</strong></p>
-      <img src="https://example.com/path-to-your-qr-code.png" alt="QR Code" width="180" height="180">
-      <p class="wallet-address">TX3u9xRkL6D7tMwPnR81Bq9EajGZ27E9hf</p>
-    </div>
+    <p>Thank you for choosing us.<br />— The FlightTeam</p>
 
     <div class="footer">
-      <p>Please reply to this email with a screenshot of your transaction once you have completed the payment.</p>
-      <p>This deposit has been received but is still awaiting confirmation.</p>
+      <p>If you didn’t initiate this booking, please ignore this email or contact us.</p>
     </div>
   </div>
 </body>

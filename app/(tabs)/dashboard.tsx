@@ -1,31 +1,35 @@
+
 import useAppTheme from "@/lib/appTheme";
 import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Text,
   View,
   StyleSheet,
   Image,
-  Pressable,
-  FlatList,
   ScrollView,
-  ToastAndroid,
+  Dimensions,
+  RefreshControl
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import BalanceCard from "@/components/BalanceCard";
 import BoxLink from "@/components/BoxLink";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-simple-toast'
 import TransactionItem from "@/components/TransactionItem";
 import { getToken } from "@/lib/authToken";
-
+import LoaderScreen from "@/components/LoaderScreen";
+const screenHeight = Dimensions.get("window").height;
 const Dashboard = () => {
   const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [user, setUser] = useState<any>(null);
   const [account, setAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false)
 
   const fetchData = async () => {
     try {
+      setIsLoading(true);
       const token = await getToken();
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/db-data`,
@@ -44,10 +48,12 @@ const Dashboard = () => {
         setTransactions(res.transactions);
         return true;
       }
-      ToastAndroid.show("unknown server error", ToastAndroid.LONG);
+      Toast.show("unknown server error", Toast.LONG);
     } catch (error: any) {
-      ToastAndroid.show("unknown server error", ToastAndroid.LONG);
+      Toast.show("unknown server error", Toast.LONG);
       console.log(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,9 +61,19 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  const onRefresh = useCallback(async () => {
+    await fetchData()
+    setRefreshing(false)
+  },[])
+
   return (
-    <ScrollView>
-      <View className="flex-1 bg-bgLight dark:bg-bgDark py-5">
+    <ScrollView refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />
+    }>
+      <View
+        style={{ minHeight: screenHeight - 30 }}
+        className="flex-1 bg-bgLight dark:bg-bgDark py-5"
+      >
         <View
           style={{ flexDirection: "row" }}
           className="justify-between items-center mb-10 px-5"
@@ -73,7 +89,7 @@ const Dashboard = () => {
               className="border-4 border-primary rounded-full"
             />
             <Text className="text-xl font-bold text-dark dark:text-light">
-              Hi, {user?.fullname.split(" ")[1] ?? "Guest"}
+              Hi, {user?.fullname.trim().split(" ")[0] ?? "Guest"}
             </Text>
           </View>
           <MaterialIcons name="chat" size={25} className="!text-primary" />
@@ -85,7 +101,13 @@ const Dashboard = () => {
 
         <View className="my-7 px-3">
           <Text className="text-sm dark:text-light mb-4">Quick Access</Text>
-          <View className="flex-row gap-x-2">
+          <View className="flex-row flex-wrap gap-2">
+            <BoxLink
+              href="/booking/"
+              icon="flight-takeoff"
+              title="Bookings"
+              iconColor="green"
+            />
             <BoxLink
               href="/plan/tradingPlan"
               icon="candlestick-chart"
@@ -93,13 +115,7 @@ const Dashboard = () => {
               iconColor="orange"
             />
             <BoxLink
-              href="/plan/myPlan"
-              icon="trending-up"
-              title="My Plan"
-              iconColor="green"
-            />
-            <BoxLink
-              href="/convert"
+              href="/plan/SwapPlan"
               icon="swap-calls"
               title="Convert"
               iconColor="purple"
@@ -110,12 +126,27 @@ const Dashboard = () => {
               title="Transfer"
               iconColor="blue"
             />
+            <BoxLink
+              href="/plan/tradingPlan"
+              icon="money"
+              title="Buy Plan"
+              iconColor="gray"
+            />
+            <BoxLink
+              href="/plan/tradingPlan"
+              icon="savings"
+              title="Sell Plan"
+              iconColor="pink"
+            />
           </View>
         </View>
         <View className="mt-5 px-3">
           <View className="flex-row justify-between mb-4">
             <Text className="text-sm dark:text-light">Transactions</Text>
-            <Link href="/transactions" className="dark:text-light flex-row items-center">
+            <Link
+              href="/transactions"
+              className="dark:text-light flex-row items-center"
+            >
               <Text>see more</Text>
               <MaterialIcons name="chevron-right" size={10} />
             </Link>
@@ -138,6 +169,8 @@ const Dashboard = () => {
           </View>
         </View>
       </View>
+
+      {isLoading && <LoaderScreen />}
     </ScrollView>
   );
 };

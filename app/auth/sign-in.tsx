@@ -12,9 +12,12 @@ import { Link } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import useAppTheme from "@/lib/appTheme";
+import SubmitButtonWrapper from "@/components/SubmitButtonWrapper";
 
 const SignIn = () => {
   const router = useRouter();
+  const {textColor} = useAppTheme()
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -81,7 +84,8 @@ const SignIn = () => {
           <TextInput
             style={styles.input}
             className="text-dark dark:text-light bg-light dark:bg-dark rounded-md"
-            placeholder="Enter your username"
+            placeholderTextColor={textColor}
+            placeholder="Enter your email"
             value={form.email}
             onChangeText={(val) => setForm({ ...form, email: val })}
           />
@@ -96,6 +100,7 @@ const SignIn = () => {
           <TextInput
             style={styles.input}
             className="dark:text-light bg-light dark:bg-dark  rounded-md"
+            placeholderTextColor={textColor}
             placeholder="Enter your password"
             value={form.password}
             onChangeText={(val) => setForm({ ...form, password: val })}
@@ -103,7 +108,7 @@ const SignIn = () => {
           />
         </View>
 
-        <Link href="/" className="mt-4">
+        <Link href="/VerifyUser?action=password" className="mt-4">
           <Text className="text-primary font-semibold text-center text-lg">
             Forgot Password?
           </Text>
@@ -111,37 +116,8 @@ const SignIn = () => {
       </View>
 
       <View
-        style={[styles.nextContainer]}
-        className="bg-bgLight dark:bg-bgDark"
       >
-        <Text
-          style={[
-            styles.nextText,
-            {
-              color: "red",
-              textTransform: "capitalize",
-            },
-          ]}
-          className="bg-bgLight dark:bg-bgDark"
-        >
-          {" "}
-          {error}
-        </Text>
-
-        <Pressable
-          style={styles.nextButton}
-          onPress={() => handleSubmit()}
-          disabled={isLoading}
-        >
-          {isLoading && (
-            <FontAwesome5
-              name="spinner"
-              size={20}
-              className="!text-light animate-spin"
-            />
-          )}
-          <Text className="text-light"> Sign in</Text>
-        </Pressable>
+        <SubmitButtonWrapper isLoading={isLoading} label="Sign In" errorMessage={error} onSubmit={() => handleSubmit()} />
       </View>
     </View>
   );
@@ -180,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1 / 4,
     justifyContent: "center",
     alignItems: "center",
-    position: "fixed",
+   
     zIndex: 99,
   },
   nextButton: {

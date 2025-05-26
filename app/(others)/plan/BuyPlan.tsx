@@ -91,7 +91,7 @@ const BuyPlan = () => {
 
   return (
     <ScrollView className="flex-1  dark:bg-bgDark bg-bgLight">
-      <PinModalComponent isVisible={authenticate} onClose={() => setAuthenticate(false)} onValidate={() => purchase()} />
+      {authenticate && <PinModalComponent isVisible={authenticate} onClose={() => setAuthenticate(false)} onValidate={() => purchase()} />}
       <View
         className="flex-1 justify-center"
         style={{ minHeight: screenHeight }}
@@ -119,7 +119,7 @@ const BuyPlan = () => {
           </View>
 
           <View className="my-10">
-            <View className="flex-row justify-between items-center dark:bg-slate-900 bg-slate-200 rounded-xl px-4 py-5">
+            <View className="flex-row justify-between items-center dark:bg-slate-900 bg-slate-300 rounded-xl px-4 py-5">
               <View className="flex-row items-center gap-x-5">
                 <MaterialIcons
                   name="wallet"

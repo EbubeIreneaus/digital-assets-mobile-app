@@ -13,18 +13,18 @@ module.exports = {
         // bgLight: '#ffffff',
         // light: '#f7f7f8',
 
-        bgDark: "#0f172a", // Tailwind's slate-900
-        dark: "#020617", // Tailwind's slate-950
+        dark: "#0f172a", // Tailwind's slate-900
+        bgDark: "#020617", // Tailwind's slate-950
 
-        bgLight: "#e2e8f0", // Tailwind's slate-200
-        light: "#cbd5e1",
+        light: "#e2e8f0", // Tailwind's slate-200
+        bgLight: "#cbd5e1",
 
         // Texts
         textLight: "#E0E0E0",
         textDark: "#1A1A1A",
 
         // Accent
-        primary: "#1D3B53",
+        primary: "#002B7F",
       },
     },
   },

@@ -1,27 +1,29 @@
 import { Picker } from "@react-native-picker/picker";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   View,
   Text,
-  Pressable,
-  TextInput,
   TouchableOpacity,
-  ToastAndroid,
   Image,
+  RefreshControl
 } from "react-native";
 import { InvestPlan } from "@/lib/plan";
-import Colors from "@/lib/color";
 import Currency from "@/lib/currency";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { getToken } from "@/lib/authToken";
 import { Link, router } from "expo-router";
+import LoaderScreen from "@/components/LoaderScreen";
+import Toast from 'react-native-simple-toast'
+import useAppTheme from "@/lib/appTheme";
 // Adjust the path as needed
 
 const MyPlan = Object.keys(InvestPlan) as Array<keyof typeof InvestPlan>;
 const tradingPlan = () => {
+    const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [account, setAccount] = useState({total_invested: 0, total_gain: 0})
   const [plans, setPlans] = useState<any>([])
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false)
   
 
   async function fetchData(){
@@ -30,7 +32,7 @@ const tradingPlan = () => {
       if (!token) {
         return router.push('/auth/sign-in')
       }
-
+      setIsLoading(true)
       const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/investment/trading-plan`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -43,9 +45,11 @@ const tradingPlan = () => {
         return setAccount(res.account)
       }
 
-      ToastAndroid.show('unknown server error', ToastAndroid.LONG)
+      Toast.show('unknown server error', Toast.LONG)
     } catch (error) {
-      ToastAndroid.show('unknown server error', ToastAndroid.LONG)
+      Toast.show('unknown server error', Toast.LONG)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -53,8 +57,13 @@ const tradingPlan = () => {
     fetchData()
   }, [])
 
+  const refresh = useCallback(async () => {
+    await fetchData()
+    setRefreshing(false)
+  }, [])
+
   return (
-    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight ">
+    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight " refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}>
       <View className="dark:bg-dark bg-light flex-1 px-7 py-5 m-5 rounded-xl">
         <View className="mb-14">
           <View className="mb-7">
@@ -121,6 +130,8 @@ const tradingPlan = () => {
           </View>
         </View>
       </View>
+
+      {isLoading && <LoaderScreen />}
     </ScrollView>
   );
 };

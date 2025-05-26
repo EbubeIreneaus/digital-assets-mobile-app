@@ -77,11 +77,11 @@ const SellPlan = () => {
 
   return (
     <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight">
-      <PinModalComponent
+      {authenticate && <PinModalComponent
         isVisible={authenticate}
         onClose={() => setAuthenticate(false)}
         onValidate={() => submit()}
-      />
+      />}
       <View
         className="flex-1 justify-center"
         style={{ minHeight: screenHeight }}

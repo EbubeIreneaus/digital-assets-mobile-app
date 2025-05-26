@@ -117,17 +117,19 @@ const WithdrawalIndex = () => {
                     selectedValue={form.channel}
                     onValueChange={(val: string) => updateForm("channel", val)}
                   >
-                    <Picker.Item label="BTC" value="BTC" />
+                    {
+                      cryptoChannels.map((channel) => <Picker.Item label={channel.name} value={channel.name} key={channel.name} />)
+                    }
                   </Picker>
                 </View>
-                <View className=" rounded-lg mb-8">
+                {/* <View className=" rounded-lg mb-8">
                   <TextInput
                     placeholder="Network"
                     className=" px-3  py-4 text-lg font-semibold dark:bg-slate-800 bg-slate-100 rounded-lg dark:text-light"
                     placeholderTextColor={textColor}
                     onChangeText={(val) => updateForm("network", val)}
                   />
-                </View>
+                </View> */}
                 <View
                   style={{ position: "relative" }}
                   className=" rounded-lg dark:bg-slate-800 bg-slate-100"
@@ -191,3 +193,22 @@ const FormSchema = z.object({
     .string()
     .min(1, { message: "Wallet address field is required" }),
 });
+
+const cryptoChannels = [
+  { name: "Bitcoin", ticker: "BTC", network: "Bitcoin" },
+  { name: "Ethereum", ticker: "ETH", network: "Ethereum Mainnet" },
+  { name: "Binance Coin", ticker: "BNB", network: "BNB Smart Chain" },
+  { name: "USDT (ERC-20)", ticker: "USDT", network: "Ethereum" },
+  { name: "USDT (BEP-20)", ticker: "USDT", network: "BNB Smart Chain" },
+  { name: "USDT (TRC-20)", ticker: "USDT", network: "Tron" },
+  { name: "USDC", ticker: "USDC", network: "Ethereum" },
+  { name: "Solana", ticker: "SOL", network: "Solana" },
+  { name: "Polygon", ticker: "MATIC", network: "Polygon" },
+  { name: "Avalanche", ticker: "AVAX", network: "Avalanche C-Chain" },
+  { name: "Litecoin", ticker: "LTC", network: "Litecoin" },
+  { name: "Dogecoin", ticker: "DOGE", network: "Dogecoin" },
+  { name: "DAI", ticker: "DAI", network: "Ethereum" },
+  { name: "Fantom", ticker: "FTM", network: "Fantom Opera" },
+  { name: "Arbitrum", ticker: "ETH", network: "Arbitrum One" },
+  { name: "Optimism", ticker: "ETH", network: "Optimism" },
+];
