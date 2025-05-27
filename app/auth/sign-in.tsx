@@ -108,7 +108,7 @@ const SignIn = () => {
           />
         </View>
 
-        <Link href="/VerifyUser?action=password" className="mt-4">
+        <Link href="/auth/ResetPasswordEmail" className="mt-4">
           <Text className="text-primary font-semibold text-center text-lg">
             Forgot Password?
           </Text>

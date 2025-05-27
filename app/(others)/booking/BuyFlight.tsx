@@ -201,7 +201,7 @@ export default function FlightBookingForm() {
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="1"
+          placeholder="no of passenger(s)"
           value={formData.passenger.toString()}
           onChangeText={(text) => updateForm("passenger", text)}
           placeholderTextColor={textColor}

@@ -22,17 +22,19 @@ const CheckBox = ({
   label,
   isChecked,
   onPress,
+  network
 }: {
   label: string;
   isChecked: boolean;
   onPress: () => void;
+  network?:string
 }) => {
   return (
     <TouchableOpacity
       className="flex-row justify-between items-center dark:bg-dark mb-4 bg-light h-32 px-5 rounded-lg"
       onPress={onPress}
     >
-      <Text className="dark:text-light">{label}</Text>
+      <Text className="dark:text-light">{label} {network && `(${network})`}</Text>
       {isChecked ? (
         <MaterialIcons
           name="radio-button-checked"
@@ -52,15 +54,16 @@ const CheckBox = ({
 
 const DepositIndex = () => {
   const { bgColor, textColor, backgroundColor } = useAppTheme();
-  const [payMethods, setPayMethods] = useState<{ name: string }[]>([]);
+  const [payMethods, setPayMethods] = useState<{ name: string, id: number, network: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
   const [fetching, setFetching] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [channelId, setChannelId] = useState<any>(null)
   const [form, setForm] = useState({
     amount: 0,
-    channel: "BTC",
+    channel: "",
   });
 
   async function getCrypto() {
@@ -102,7 +105,7 @@ const DepositIndex = () => {
       const res = await req.json();
 
       if (res.success) {
-        const query = `amount=${q.amount}&channel=${q.channel}&id=${res.id}`;
+        const query = `amount=${q.amount}&channelId=${channelId}&id=${res.id}`;
         setForm({
           amount: 0,
           channel: "BTC",
@@ -138,11 +141,11 @@ const DepositIndex = () => {
     >
       <View className="flex-1 justify-center">
         <View className="mb-12 mt-5">
-          <Text className="dark:text-light mb-3 px-1">Enter Amount</Text>
+          <Text className="dark:text-light mb-3 px-1 text-lg font-semibold">Enter Amount</Text>
           <TextInput
             className="dark:bg-dark bg-light dark:text-light w-full !h-16 px-5 rounded-md"
             placeholder="Amount (USD)"
-            placeholderTextColor={Colors.primary}
+            placeholderTextColor={textColor}
             inputMode="decimal"
             onChangeText={(val) => setForm({ ...form, amount: Number(val) })}
           />
@@ -156,8 +159,9 @@ const DepositIndex = () => {
             {payMethods.map((pm) => (
               <CheckBox
                 label={pm.name}
+                network={pm.network}
                 isChecked={form.channel === pm.name}
-                onPress={() => setForm({ ...form, channel: pm.name })}
+                onPress={() => {setForm({ ...form, channel: pm.name }); setChannelId(pm.id)}}
                 key={pm.name}
               />
             ))}
@@ -175,11 +179,20 @@ const DepositIndex = () => {
                 {Currency(form.amount)}
               </Text>
             </View>
-            <View className="flex-row justify-between">
+            <View className="flex-row justify-between mb-6">
               <Text className="dark:text-light tex-lg font-semibold">
                 Channel
               </Text>
               <Text className="dark:text-light text-lg">{form.channel}</Text>
+            </View>
+
+            <View className="flex-row justify-between">
+              <Text className="dark:text-light tex-lg font-semibold">
+                Network
+              </Text>
+              <Text className="dark:text-light text-lg">{
+                payMethods.find((pm) => pm.name === form.channel)?.network || "N/A"
+                }</Text>
             </View>
           </View>
 

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Digital Assets",
-    "slug": "Digital Assets",
+    "slug": "digital-assets",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -15,7 +15,11 @@
       "backgroundColor": "#002B7F"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ireneaus.digitalassets",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

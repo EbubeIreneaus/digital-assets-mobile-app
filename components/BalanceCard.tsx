@@ -73,7 +73,7 @@ const BalanceCard = ({account}:{account: props}) => {
       </View>
 
       <View className="dark:bg-dark bg-light py-3 px-4 mx-3 rounded-md flex-row justify-between items-center border-t-4 border-t-primary">
-        <Text className="dark:text-light text-sm">Available for spend</Text>
+        <Text className="dark:text-light text-sm">Available to spend</Text>
         <Balance amount={account.available_balance} hide={!isVisible} size="small" />
       </View>
     </View>

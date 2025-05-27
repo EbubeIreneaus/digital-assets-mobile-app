@@ -1,13 +1,16 @@
 import Colors from "@/lib/color";
 import { Stack } from "expo-router";
-import { StatusBar } from "react-native";
+import { StatusBar, View } from "react-native";
 import "../global.css";
+import ThemeContext, { ThemeProvider } from "@/context/themeContext";
+
 
 export default function RootLayout() {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       
+       <ThemeProvider>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -20,6 +23,7 @@ export default function RootLayout() {
             options={{ title: "404 Page Not Found" }}
           />
         </Stack>
+       </ThemeProvider>
       
     </>
   );

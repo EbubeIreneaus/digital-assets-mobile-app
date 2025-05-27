@@ -1,7 +1,7 @@
 import useAppTheme from "@/lib/appTheme";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Link, RelativePathString } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { Link, RelativePathString, router } from "expo-router";
+import React, { useCallback, useEffect, useState, useContext } from "react";
 import {
   ScrollView,
   View,
@@ -16,19 +16,35 @@ import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-simple-toast";
 import { getToken } from "@/lib/authToken";
 import LoaderScreen from "@/components/LoaderScreen";
+import ThemeContext, { ThemeProvider } from "@/context/themeContext";
 
 const screenHeight = Dimensions.get("window").height;
 const setting = () => {
-    const { bgColor, textColor, backgroundColor } = useAppTheme();
+  const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [imgSrc, setImgSrc] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false)
-  const [user, setUser] = useState({
+  const [refreshing, setRefreshing] = useState(false);
+  type TierType = { status: string } | null;
+  const { toggleColorScheme, colorScheme } = useContext(ThemeContext);
+
+  const [user, setUser] = useState<{
+    fullname: string;
+    profile_pics: string;
+    document_verified: boolean;
+    email_verified: boolean;
+    tier: number;
+    tier2: TierType;
+    tier3: TierType;
+    can_verify: boolean;
+  }>({
     fullname: "",
     profile_pics: "",
     document_verified: false,
     email_verified: false,
     tier: 1,
+    tier2: null,
+    tier3: null,
+    can_verify: false,
   });
 
   async function FetchData() {
@@ -114,13 +130,24 @@ const setting = () => {
     }
   }
 
- const refresh = useCallback(async () => {
-    await FetchData()
-    setRefreshing(false)
-  }, [])
+  const refresh = useCallback(async () => {
+    await FetchData();
+    setRefreshing(false);
+  }, []);
 
   return (
-    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight " refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}>
+    <ScrollView
+      className="flex-1 dark:bg-bgDark bg-bgLight "
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh}
+          progressBackgroundColor={bgColor}
+          colors={[textColor]}
+          tintColor={textColor}
+        />
+      }
+    >
       <View className="flex-1 dark:bg-bgDark bg-bgLight px-5">
         <View
           className=" rounded-lg  justify-center py-5 px-2"
@@ -162,12 +189,21 @@ const setting = () => {
               >
                 {user.fullname}
               </Text>
-              {user.document_verified && (
+              {user.tier3 && user.tier3.status == "approved" ? (
                 <MaterialIcons
                   name="verified"
                   size={20}
-                  className="!text-blue-500"
+                  className="!text-amber-500"
                 />
+              ) : (
+                user.tier2 &&
+                user.tier2.status == "approved" && (
+                  <MaterialIcons
+                    name="verified"
+                    size={20}
+                    className="!text-blue-500"
+                  />
+                )
               )}
             </View>
           </View>
@@ -188,61 +224,106 @@ const setting = () => {
           </View>
 
           <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
+            <View className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
+              <Text className="font-semibold " style={{ color: textColor }}>
+                Appearance
+              </Text>
+              <TouchableOpacity onPress={() => toggleColorScheme()} className="flex-row gap-x-1 items-center dark:bg-gray-700/50 px-10 py-2 rounded-xl bg-slate-50/50">
+                <Text className="dark:text-light textDark capitalize">{colorScheme}</Text>
+                <MaterialIcons
+                  name={colorScheme === "dark" ? 'dark-mode' : 'light-mode'}
+                  size={20}
+                  style={{ color: textColor }}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
             <Text className="dark:text-light/50 text-dark/50 text-lg font-semibold mb-5">
               Verifications
             </Text>
             <View>
-              {user.tier == 1 && (
-                <Link href="/Tier2Intro" asChild>
-                  <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
-                    <Text
-                      className="font-semibold "
-                      style={{ color: textColor }}
-                    >
-                      Upgrade Account
-                    </Text>
-
-                    <TouchableOpacity
-                      style={styles.pillContainer}
-                      className="bg-gray-500"
-                    >
-                      <Text className="text-light">Tier 1</Text>
+              {user.can_verify && (
+                <>
+                  {user.tier3 && user.tier3.status == "approved" ? (
+                    <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
+                      <Text
+                        className="font-semibold "
+                        style={{ color: textColor }}
+                      >
+                        Account Verified
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.pillContainer}
+                        className="bg-primary"
+                      >
+                        <Text className="text-light">Tier 3</Text>
+                      </TouchableOpacity>
                     </TouchableOpacity>
-                  </TouchableOpacity>
-                </Link>
-              )}
-
-              {user.tier == 2 && (
-                <Link href="/Tier3VerificationIntro" asChild>
-                  <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
-                    <Text
-                      className="font-semibold "
-                      style={{ color: textColor }}
-                    >
-                      Upgrade Account
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.pillContainer}
-                      className="bg-primary"
-                    >
-                      <Text className="text-light">Tier 2</Text>
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                </Link>
-              )}
-
-              {user.tier == 3 && (
-                <TouchableOpacity className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
-                  <Text className="font-semibold " style={{ color: textColor }}>
-                    Upgrade Account
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.pillContainer}
-                    className="bg-primary"
-                  >
-                    <Text className="text-light">Tier 3</Text>
-                  </TouchableOpacity>
-                </TouchableOpacity>
+                  ) : (
+                    <>
+                      {user.tier2 && user.tier2.status == "approved" ? (
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (user.tier3 && user.tier3.status == "pending") {
+                              return Toast.show(
+                                "You have already submitted your documents for verification",
+                                Toast.LONG
+                              );
+                            }
+                            return router.push("/Tier3VerificationIntro");
+                          }}
+                          className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl"
+                        >
+                          <Text
+                            className="font-semibold "
+                            style={{ color: textColor }}
+                          >
+                            Verify Me
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.pillContainer}
+                            className="bg-primary"
+                          >
+                            <Text className="text-light">Tier 2</Text>
+                          </TouchableOpacity>
+                        </TouchableOpacity>
+                      ) : (
+                        <>
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (
+                                user.tier2 &&
+                                user.tier2.status == "pending"
+                              ) {
+                                return Toast.show(
+                                  "You have already submitted your documents for verification",
+                                  Toast.LONG
+                                );
+                              }
+                              return router.push("/Tier2Intro");
+                            }}
+                            className="flex-row justify-between items-center px-3 py-5 mb-1 rounded-xl "
+                          >
+                            <Text
+                              className="font-semibold "
+                              style={{ color: textColor }}
+                            >
+                              Verify Me
+                            </Text>
+                            <TouchableOpacity
+                              style={styles.pillContainer}
+                              className="bg-gray-500"
+                            >
+                              <Text className="text-light">Tier 1</Text>
+                            </TouchableOpacity>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
               )}
 
               <Link href="/" asChild>
