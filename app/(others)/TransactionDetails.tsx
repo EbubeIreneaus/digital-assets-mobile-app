@@ -68,7 +68,7 @@ const TransactionDetails = () => {
       }
     }
     fetch_data();
-  });
+  }, []);
 
   useEffect(() => {
     switch (transaction.status) {

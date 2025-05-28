@@ -21,7 +21,7 @@ export default function Index() {
   }, []);
 
   return (
-    <View className="flex-1 justify-center items-center dark:bg-bgDark bg-bgLight">
+    <View className="flex-1 dark:bg-bgDark bg-bgLight">
       <LoaderScreen />
     </View>
   );

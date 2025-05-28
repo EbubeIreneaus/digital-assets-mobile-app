@@ -9,7 +9,9 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  RefreshControl
+  RefreshControl,
+  TouchableOpacity,
+  Linking
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import BalanceCard from "@/components/BalanceCard";
@@ -24,6 +26,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [account, setAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [support, setSupport] = useState('')
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false)
 
@@ -46,6 +49,7 @@ const Dashboard = () => {
         setUser(res.user);
         setAccount(res.account);
         setTransactions(res.transactions);
+        setSupport(res.support)
         return true;
       }
       Toast.show("unknown server error", Toast.LONG);
@@ -92,7 +96,14 @@ const Dashboard = () => {
               Hi, {user?.fullname.trim().split(" ")[0] ?? "Guest"}
             </Text>
           </View>
-          <MaterialIcons name="chat" size={25} className="!text-primary" />
+          <TouchableOpacity onPress={async () => {
+            if(await Linking.canOpenURL(support)){
+              return Linking.openURL(support)
+            }
+            Toast.show('Telegram app not installed on device', Toast.LONG)
+          }}>
+          <MaterialIcons name="support-agent" size={25} className="dark:!text-light !text-dark" />
+          </TouchableOpacity>
         </View>
 
         <BalanceCard

@@ -5,8 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Pressable,
-  Button,
   RefreshControl,
 } from "react-native";
 import Colors from "@/lib/color";
@@ -56,7 +54,7 @@ const DepositIndex = () => {
   const { bgColor, textColor, backgroundColor } = useAppTheme();
   const [payMethods, setPayMethods] = useState<{ name: string, id: number, network: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<null|string>(null);
   const router = useRouter();
   const [fetching, setFetching] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,6 +86,9 @@ const DepositIndex = () => {
   }, []);
 
   const Deposit = async () => {
+    if (!isNaN(Number(form.amount)) || Number(form.amount) <  10) {
+      return setError("cannot deposit amount less than $10")
+    }
     setIsLoading(true);
     const token = await getToken();
     const q = form;
