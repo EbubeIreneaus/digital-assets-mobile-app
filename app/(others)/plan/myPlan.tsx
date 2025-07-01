@@ -24,7 +24,7 @@ const MyPlan = () => {
   const navigation = useNavigation();
   const [transactions, setTransactions] = useState([]);
   const [plan, setPlan] = useState<any>(null);
-  const [account, setAccount] = useState({ balance: 0, planBalance: 0 });
+  const [planBalance, setPlanBalance]= useState(0);
   const [refreshing, setRefreshing] = useState(false)
 
 
@@ -48,7 +48,7 @@ const MyPlan = () => {
       if (res.success) {
         setTransactions(res.transactions);
         setPlan(res.plan);
-        setAccount(res.account);
+        setPlanBalance(res.balance);
         return true;
       }
 
@@ -94,7 +94,7 @@ const MyPlan = () => {
           >
             <View>
               <Text className="text-5xl font-bold  dark:text-light mb-2">
-                {Currency(account.planBalance)}
+                {Currency(planBalance)}
               </Text>
               <View className="flex-row justify-center gap-2 items-center">
                 <Text className="text-primary font-semibold">
@@ -110,7 +110,7 @@ const MyPlan = () => {
 
         <View className="flex-row justify-between gap-x-3">
           <Link
-            href={`/plan/BuyPlan?plan=${plan?.name}&planLabel=${plan?.label}&planIcon=${plan?.icon}&planRoi=${plan?.roi}&balance=${account.balance}`}
+            href={`/plan/BuyPlan?plan=${plan?.name}&planLabel=${plan?.label}&planIcon=${plan?.icon}&planRoi=${plan?.roi}`}
             asChild
           >
             <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
@@ -120,7 +120,7 @@ const MyPlan = () => {
           </Link>
 
           <Link
-            href={`/plan/SellPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${account.planBalance}`}
+            href={`/plan/SellPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${planBalance}`}
             asChild
           >
             <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">
@@ -130,7 +130,7 @@ const MyPlan = () => {
           </Link>
 
           <Link
-            href={`/plan/SwapPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${account.planBalance}`}
+            href={`/plan/SwapPlan?plan=${plan?.name}&planLabel=${plan?.label}&planBalance=${planBalance}`}
             asChild
           >
             <TouchableOpacity className="dark:bg-bgDark bg-bgLight py-4 rounded-lg flex-row items-center justify-center gap-x-3 flex-1">

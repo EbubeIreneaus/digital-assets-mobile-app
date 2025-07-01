@@ -49,7 +49,7 @@ const Dashboard = () => {
         setUser(res.user);
         setAccount(res.account);
         setTransactions(res.transactions);
-        setSupport(res.support)
+        setSupport(res.liveChat)
         return true;
       }
       Toast.show("unknown server error", Toast.LONG);
@@ -96,14 +96,11 @@ const Dashboard = () => {
               Hi, {user?.fullname.trim().split(" ")[0] ?? "Guest"}
             </Text>
           </View>
-          <TouchableOpacity onPress={async () => {
-            if(await Linking.canOpenURL(support)){
-              return Linking.openURL(support)
-            }
-            Toast.show('Telegram app not installed on device', Toast.LONG)
-          }}>
+         <Link href={`/LiveChat?url=${support}`} asChild>
+          <TouchableOpacity>
           <MaterialIcons name="support-agent" size={25} className="dark:!text-light !text-dark" />
           </TouchableOpacity>
+         </Link>
         </View>
 
         <BalanceCard

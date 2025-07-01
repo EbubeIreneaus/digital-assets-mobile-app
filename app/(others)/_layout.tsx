@@ -16,6 +16,7 @@ export default function RootLayout() {
         <Stack.Screen name="transfer02" options={{ headerShown: false }} />
         <Stack.Screen name="withdrawal" options={{ headerShown: false }} />
         <Stack.Screen name="booking" options={{ headerShown: false }} />
+        <Stack.Screen name="LiveChat" options={{ headerShown: false }} />
         <Stack.Screen
           name="TransactionDetails"
           options={({ navigation }) => ({

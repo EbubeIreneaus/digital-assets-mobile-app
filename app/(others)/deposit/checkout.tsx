@@ -57,6 +57,7 @@ const Checkout = () => {
       const res = await req.json();
       console.log(res)
       if (res.success) {
+        console.log(res.data)
         return setWallet(res.data);
       }
       Toast.show("unknown server error", Toast.LONG);
@@ -155,7 +156,7 @@ const Checkout = () => {
         <View className="mb-10 items-center">
           <Image
             source={{
-              uri: process.env.EXPO_PUBLIC_API_URL + wallet?.qrcode_image,
+              uri: process.env.EXPO_PUBLIC_API_URL + wallet?.qrcode_image 
             }}
             style={{ width: 250, height: 250 }}
             className="my-6"

@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import Currency from "@/lib/currency";
 
+
 type props = {
     type: string,
     label: string
@@ -17,7 +18,9 @@ const TransactionItem = ({item}: any) => {
             <View className=" items-center justify-center rounded-full">
               {item.type == 'deposit' && <MaterialIcons name="add" size={20} color='green'  />}
               {item.type == 'withdrawal' && <MaterialIcons name="remove" size={20} color='red'  />}
-              {(item.type != 'deposit' && item.type != 'withdrawal') && <MaterialIcons name="money" size={20} className="!text-primary" />}
+              {(item.type != 'deposit' && item.type != 'withdrawal') && <MaterialIcons name="money" size={20} 
+                className={item.label.toLowerCase().startsWith('sale') ? '!text-red-500' : '!text-green-500'}
+              />}
             </View>
             <View>
                 <Text className="dark:text-light capitalize line-clamp-1 text-ellipsis font-bold">{item.label}</Text>

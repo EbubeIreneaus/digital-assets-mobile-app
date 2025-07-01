@@ -31,7 +31,7 @@ const SellPlan = () => {
 
   async function submit() {
     try {
-      setIsLoading(false);
+      setIsLoading(true);
       setAuthenticate(false);
       setError(null);
       const token = await getToken();
@@ -40,7 +40,7 @@ const SellPlan = () => {
       }
 
       const req = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/account/sell-plan`,
+        `${process.env.EXPO_PUBLIC_API_URL}/api/investment/sell-plan`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -164,7 +164,7 @@ const SellPlan = () => {
           </View>
 
           <SubmitButtonWrapper
-            onSubmit={() => submit}
+            onSubmit={() => submit()}
             label="Sell Plan"
             isLoading={isLoading}
             errorMessage={error}

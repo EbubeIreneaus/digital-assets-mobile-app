@@ -6,64 +6,77 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  RefreshControl
+  RefreshControl,
 } from "react-native";
 import { InvestPlan } from "@/lib/plan";
 import Currency from "@/lib/currency";
 import { getToken } from "@/lib/authToken";
 import { Link, router } from "expo-router";
 import LoaderScreen from "@/components/LoaderScreen";
-import Toast from 'react-native-simple-toast'
+import Toast from "react-native-simple-toast";
 import useAppTheme from "@/lib/appTheme";
 // Adjust the path as needed
 
 const MyPlan = Object.keys(InvestPlan) as Array<keyof typeof InvestPlan>;
 const tradingPlan = () => {
-    const { bgColor, textColor, backgroundColor } = useAppTheme();
-  const [account, setAccount] = useState({total_invested: 0, total_gain: 0})
-  const [plans, setPlans] = useState<any>([])
+  const { bgColor, textColor, backgroundColor } = useAppTheme();
+  const [account, setAccount] = useState({ total_invested: 0, total_gain: 0 });
+  const [plans, setPlans] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false)
-  
+  const [refreshing, setRefreshing] = useState(false);
 
-  async function fetchData(){
+  async function fetchData() {
     try {
-      const token = await getToken()
+      const token = await getToken();
       if (!token) {
-        return router.push('/auth/sign-in')
+        return router.push("/auth/sign-in");
       }
-      setIsLoading(true)
-      const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/investment/trading-plan`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      setIsLoading(true);
+      const req = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/investment/trading-plan`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      })
-      const res = await req.json()
-    
+      );
+      const res = await req.json();
+
       if (res.success) {
-        setPlans(res.plans)
-        return setAccount(res.account)
+        setPlans(res.plans);
+        return setAccount(res.account);
       }
 
-      Toast.show('unknown server error', Toast.LONG)
+      Toast.show("unknown server error", Toast.LONG);
     } catch (error) {
-      Toast.show('unknown server error', Toast.LONG)
+      Toast.show("unknown server error", Toast.LONG);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
-  useEffect(()=> {
-    fetchData()
-  }, [])
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const refresh = useCallback(async () => {
-    await fetchData()
-    setRefreshing(false)
-  }, [])
+    await fetchData();
+    setRefreshing(false);
+  }, []);
 
   return (
-    <ScrollView className="flex-1 dark:bg-bgDark bg-bgLight " refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor} />}>
+    <ScrollView
+      className="flex-1 dark:bg-bgDark bg-bgLight "
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh}
+          progressBackgroundColor={bgColor}
+          colors={[textColor]}
+          tintColor={textColor}
+        />
+      }
+    >
       <View className="dark:bg-dark bg-light flex-1 px-7 py-5 m-5 rounded-xl">
         <View className="mb-14">
           <View className="mb-7">
@@ -116,14 +129,24 @@ const tradingPlan = () => {
 
           <View>
             {plans.map((plan: any) => (
-              <Link href={`/plan/myPlan?p=${plan.name}`} asChild key={plan.name}>
+              <Link
+                href={`/plan/myPlan?p=${plan.name}`}
+                asChild
+                key={plan.name}
+              >
                 <TouchableOpacity className="flex-row justify-between items-center py-3  mb-5">
                   <Image
-                    source={{uri: `${process.env.EXPO_PUBLIC_API_URL}/${plan.icon}`}}
+                    source={{
+                      uri: `${process.env.EXPO_PUBLIC_API_URL}/${plan.icon}`,
+                    }}
                     className="size-[30px]"
                   />
-                  <Text className="text-lg capitalize font-semibold dark:text-light">{plan.label}</Text>
-                  <Text className="text-lg dark:text-light dark:bg-slate-100/20 bg-slate-950/20 px-3 py-1.5 rounded-lg w-fit">+{plan.roi}%</Text>
+                  <Text className="text-lg capitalize font-semibold dark:text-light">
+                    {plan.label}
+                  </Text>
+                  <Text className="text-lg dark:text-light dark:bg-slate-100/20 bg-slate-950/20 px-3 py-1.5 rounded-lg w-fit">
+                   {plan.roi.toString()[0].startsWith("-")?'':'+'} {plan.roi}%
+                  </Text>
                 </TouchableOpacity>
               </Link>
             ))}

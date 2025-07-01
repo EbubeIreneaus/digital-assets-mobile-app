@@ -36,7 +36,7 @@ const SwapPlan = () => {
   const [form, setForm] = useState({
     amount: "0",
     source: plan ? String(plan) : "",
-    destination: "",
+    destination: 'stock',
   });
 
   async function fetch_plans() {
@@ -75,7 +75,7 @@ const SwapPlan = () => {
       }
 
       const req = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/account/swap-plan`,
+        `${process.env.EXPO_PUBLIC_API_URL}/api/investment/swap-plan`,
         {
           method: "POST",
           body: JSON.stringify({

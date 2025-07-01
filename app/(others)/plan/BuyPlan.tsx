@@ -5,7 +5,7 @@ import Currency from "@/lib/currency";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import Toast from 'react-native-simple-toast'
+import Toast from "react-native-simple-toast";
 import {
   Image,
   ScrollView,
@@ -14,28 +14,61 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import PinModalComponent from "@/components/PinModalComponent";
+import useAppTheme from "@/lib/appTheme";
+import LoaderScreen from "@/components/LoaderScreen";
 
 const screenHeight = Dimensions.get("window").height;
 
 const BuyPlan = () => {
+      const { bgColor, textColor, backgroundColor } = useAppTheme();
+
   const Navigation = useNavigation();
-  const { plan, planLabel, planIcon, planRoi, balance } =
-    useLocalSearchParams();
+  const { plan, planLabel, planIcon, planRoi } = useLocalSearchParams();
   const [amount, setAmount] = useState("0");
-  const [authenticate, setAuthenticate] = useState(false)
+  const [authenticate, setAuthenticate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [balance, setBalance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  async function purchase() {
+  async function fetchData() {
     try {
       const token = await getToken();
       if (!token) {
         router.replace("/auth/sign-in");
       }
+      setIsLoading(true)
+      const req = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/account/balance`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const res = await req.json();
+      if (res.success) {
+        return setBalance(res.balance)
+      }
+      Toast.show(res.msg, Toast.LONG)
+    } catch (error) {
+      Toast.show('unexpected error occured, try again', Toast.LONG)
+    }finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(()=> {fetchData()}, [])
+
+  async function purchase() {
+    try {
+      const token = await getToken();
       setIsLoading(true);
-      setAuthenticate(false)
+      setAuthenticate(false);
       setError(null);
 
       if (isNaN(Number(amount)) || Number(amount) < 1) {
@@ -69,18 +102,17 @@ const BuyPlan = () => {
     } catch (error) {
       console.log(error);
       setError("unknown server error");
-    }finally {
-      setIsLoading(false)
-      
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  function ValidateAndAuthenticate(){
+  function ValidateAndAuthenticate() {
     if (Number(amount) > Number(balance)) {
-      return setError('Insufficient wallet balance')
+      return setError("Insufficient wallet balance");
     }
 
-    setAuthenticate(true)
+    setAuthenticate(!authenticate);
   }
 
   useLayoutEffect(() => {
@@ -89,9 +121,20 @@ const BuyPlan = () => {
     });
   }, [Navigation, planLabel]);
 
+  async function onRefresh() {
+    await fetchData()
+    setRefreshing(false)
+  }
   return (
-    <ScrollView className="flex-1  dark:bg-bgDark bg-bgLight">
-      {authenticate && <PinModalComponent isVisible={authenticate} onClose={() => setAuthenticate(false)} onValidate={() => purchase()} />}
+    <ScrollView className="flex-1  dark:bg-bgDark bg-bgLight" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressBackgroundColor={bgColor} colors={[textColor]} tintColor={textColor}  />}>
+      {authenticate && (
+        <PinModalComponent
+          isVisible={authenticate}
+          onClose={() => setAuthenticate(false)}
+          onValidate={() => purchase()}
+        />
+      )}
+      {isLoading && <LoaderScreen />}
       <View
         className="flex-1 justify-center"
         style={{ minHeight: screenHeight }}
@@ -115,7 +158,11 @@ const BuyPlan = () => {
           </View>
 
           <View className="">
-           <AmountSection inputValue={amount} onButtonClick={(p) => setAmount(p)} onTextChange={(val) => setAmount(val)} />
+            <AmountSection
+              inputValue={amount}
+              onButtonClick={(p) => setAmount(p)}
+              onTextChange={(val) => setAmount(val)}
+            />
           </View>
 
           <View className="my-10">
@@ -134,8 +181,20 @@ const BuyPlan = () => {
                 <Text className="dark:text-light text-lg font-semibold">
                   {Currency(Number(balance))}
                 </Text>
-                {(Number(amount) <= Number(balance)) &&<MaterialIcons name="check-circle" size={20} className="!text-green-500"/>}
-                {(Number(amount) > Number(balance)) &&<MaterialIcons name="cancel" size={20} className="!text-red-500"/>}
+                {Number(amount) <= Number(balance) && (
+                  <MaterialIcons
+                    name="check-circle"
+                    size={20}
+                    className="!text-green-500"
+                  />
+                )}
+                {Number(amount) > Number(balance) && (
+                  <MaterialIcons
+                    name="cancel"
+                    size={20}
+                    className="!text-red-500"
+                  />
+                )}
               </View>
             </View>
           </View>
@@ -146,7 +205,6 @@ const BuyPlan = () => {
             isLoading={isLoading}
             errorMessage={error}
           />
-          
         </View>
       </View>
     </ScrollView>

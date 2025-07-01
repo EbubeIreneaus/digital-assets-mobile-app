@@ -60,7 +60,7 @@ const DepositIndex = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [channelId, setChannelId] = useState<any>(null)
   const [form, setForm] = useState({
-    amount: 0,
+    amount: '',
     channel: "",
   });
 
@@ -86,7 +86,7 @@ const DepositIndex = () => {
   }, []);
 
   const Deposit = async () => {
-    if (!isNaN(Number(form.amount)) || Number(form.amount) <  10) {
+    if (isNaN(Number(form.amount)) || Number(form.amount) <  10) {
       return setError("cannot deposit amount less than $10")
     }
     setIsLoading(true);
@@ -108,7 +108,7 @@ const DepositIndex = () => {
       if (res.success) {
         const query = `amount=${q.amount}&channelId=${channelId}&id=${res.id}`;
         setForm({
-          amount: 0,
+          amount: '',
           channel: "BTC",
         });
         return router.push(`/deposit/checkout?${query}`);
@@ -148,7 +148,8 @@ const DepositIndex = () => {
             placeholder="Amount (USD)"
             placeholderTextColor={textColor}
             inputMode="decimal"
-            onChangeText={(val) => setForm({ ...form, amount: Number(val) })}
+            onChangeText={(val) => setForm({ ...form, amount: val })}
+            value={form.amount}
           />
         </View>
 
@@ -177,7 +178,7 @@ const DepositIndex = () => {
                 Amount
               </Text>
               <Text className="dark:text-light text-lg">
-                {Currency(form.amount)}
+                {Currency(Number(form.amount))}
               </Text>
             </View>
             <View className="flex-row justify-between mb-6">
