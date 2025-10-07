@@ -30,7 +30,7 @@ const TransactionItem = ({item}: any) => {
 
           <View>
             <Text className=" font-semibold dark:text-light text-right">{Currency(Number(item.amount))}</Text>
-            {item.status == 'successful' && <Text className="text-sm text-green-200 px-1">sucessful</Text>}
+            {item.status == 'successful' && <Text className="text-sm text-green-600 px-1">sucessful</Text>}
             {item.status == 'pending' && <Text className="text-sm text-yellow-400 px-1">pending</Text>}
             {item.status == 'failed' && <Text className="text-sm text-red-600 px-1">failed</Text>}
           </View>

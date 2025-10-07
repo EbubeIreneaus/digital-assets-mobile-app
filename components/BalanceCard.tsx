@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import Balance from "./Balance";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
@@ -72,10 +72,15 @@ const BalanceCard = ({account}:{account: props}) => {
         </Link>
       </View>
 
-      <View className="dark:bg-dark bg-light py-3 px-4 mx-3 rounded-md flex-row justify-between items-center border-t-4 border-t-primary">
+     <Link href={`/withdrawal/BalanceToAvailable?balance=${account.balance}`} asChild>
+      <TouchableOpacity className="dark:bg-dark bg-light py-3 px-4 mx-3 rounded-md flex-row justify-between items-center border-t-4 border-t-primary">
         <Text className="dark:text-light text-sm">Available to spend</Text>
-        <Balance amount={account.available_balance} hide={!isVisible} size="small" />
-      </View>
+        <View className="flex-row items-center gap-2">
+          <Balance amount={account.available_balance} hide={!isVisible} size="small" />
+          <MaterialIcons name="chevron-right" size={28} className="!text-primary" />
+        </View>
+      </TouchableOpacity>
+     </Link>
     </View>
   );
 };

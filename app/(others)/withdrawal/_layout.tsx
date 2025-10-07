@@ -21,10 +21,10 @@ export default function RootLayout() {
         })}
       />
 
-      {/* <Stack.Screen
-        name="checkout"
+      <Stack.Screen
+        name="BalanceToAvailable"
         options={({ navigation }) => ({
-          title: "Confirm Deposit",
+          title: "Balance to Available",
           headerStyle: {
             backgroundColor: Colors.primary,
           },
@@ -34,7 +34,7 @@ export default function RootLayout() {
           headerTitleAlign: "center",
           headerBackVisible: false,
         })}
-      /> */}
+      />
     </Stack>
   );
 }

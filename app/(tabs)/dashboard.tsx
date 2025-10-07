@@ -110,6 +110,7 @@ const Dashboard = () => {
         <View className="my-7 px-3">
           <Text className="text-sm dark:text-light mb-4">Quick Access</Text>
           <View className="flex-row flex-wrap gap-2">
+          
             <BoxLink
               href="/booking/"
               icon="flight-takeoff"
@@ -146,6 +147,7 @@ const Dashboard = () => {
               title="Sell Plan"
               iconColor="pink"
             />
+            
           </View>
         </View>
         <View className="mt-5 px-3">
