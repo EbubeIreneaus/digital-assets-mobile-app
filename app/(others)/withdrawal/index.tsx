@@ -30,7 +30,7 @@ const WithdrawalIndex = () => {
   const [form, setForm] = useState({
     amount: "",
     channel: "",
-    network: "",
+    // network: "",
     wallet_address: "",
   });
 
@@ -188,7 +188,7 @@ const FormSchema = z.object({
     .number({ message: "amount is invalid" })
     .min(1, { message: "amount is invalid" }),
   channel: z.string().min(1, { message: "select a valid deposit channel" }),
-  network: z.string().min(1, { message: "Network field cannot be empty" }),
+  // network: z.string().min(1, { message: "Network field cannot be empty" }),
   wallet_address: z
     .string()
     .min(1, { message: "Wallet address field is required" }),

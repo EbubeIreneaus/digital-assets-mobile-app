@@ -223,7 +223,13 @@ const setting = () => {
             </View>
           </View>
 
-          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
+          <View className="dark:bg-dark bg-light p-3 rounded-lg mb-5">
+            <View>
+              <SingleLink label="Invite & Earn" href="/Invitation" />
+            </View>
+          </View>
+
+             <View className="dark:bg-dark bg-light p-3 rounded-lg mb-3">
             <View className="flex-row justify-between items-center px-3 py-5  mb-1 rounded-xl">
               <Text className="font-semibold " style={{ color: textColor }}>
                 Appearance

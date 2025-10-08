@@ -24,6 +24,7 @@ const InfoSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   country: z.string().min(1, { message: "Country is required" }),
   phone: z.string().min(10, { message: "Phone number is required" }),
+  referred_by: z.string().optional(),
 });
 
 const PasswordSchema = z
@@ -62,6 +63,7 @@ const SignUp = () => {
     country: "Afghanistan",
     phone: "",
     code: "+93",
+    referred_by: "",
   });
 
   useEffect(() => {
@@ -87,14 +89,14 @@ const SignUp = () => {
       const req = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/auth/email-already-exist/${infoData.email}`
       );
-    
+
       if (req.status !== 200) {
         ToastAndroid.show("server error, try again.", ToastAndroid.LONG);
         return false;
       }
 
       const res = await req.json();
-      
+
       if (res.exist) {
         setError("Email already exist on our server");
         return false;
@@ -103,7 +105,7 @@ const SignUp = () => {
     } catch (error) {
       ToastAndroid.show("server error, try again.", ToastAndroid.LONG);
       return false;
-    }finally {
+    } finally {
       setIsLoading(false);
     }
   }
@@ -120,7 +122,7 @@ const SignUp = () => {
         if (res.error) {
           setError(res.error.issues[0].message);
         } else {
-          await check_email_exist() && setStep(3)
+          (await check_email_exist()) && setStep(3);
         }
         break;
 
@@ -140,10 +142,10 @@ const SignUp = () => {
     setError(null);
 
     let body: any = { type: accountType, ...infoData, ...psw };
-    body.fullname = infoData.first_name + ' ' + infoData.last_name
-    delete body.first_name
-    delete body.last_name
-    delete body.confirm
+    body.fullname = infoData.first_name + " " + infoData.last_name;
+    delete body.first_name;
+    delete body.last_name;
+    delete body.confirm;
     try {
       const req = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/auth/`, {
         method: "PUT",
@@ -152,14 +154,14 @@ const SignUp = () => {
         },
         body: JSON.stringify(body),
       });
-      
-      const res = await req.json()
+
+      const res = await req.json();
 
       if (res.success) {
-        AsyncStorage.setItem('token', res.token)
-        return router.replace(`/auth/otp-verify?email=${res.email}`)
+        AsyncStorage.setItem("token", res.token);
+        return router.replace(`/auth/otp-verify?email=${res.email}`);
       }
-      setError(res.msg)
+      setError(res.msg);
     } catch (error: any) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -298,6 +300,20 @@ const SignUp = () => {
               onChangeText={(val) => handleInfoData(val, "phone")}
             />
           </View>
+
+          <View style={{ marginVertical: 10 }}>
+            <Text style={[styles.label, { color: textColor }]}>Referral Code (optional)</Text>
+            <TextInput
+              style={[
+                styles.input,
+                { backgroundColor: bgColor, color: textColor },
+              ]}
+              placeholder="Enter your referral code"
+              placeholderTextColor={textColor}
+              value={infoData.referred_by}
+              onChangeText={(val) => handleInfoData(val, "referred_by")}
+            />
+          </View>
         </ScrollView>
       )}
 
@@ -320,9 +336,7 @@ const SignUp = () => {
           </View>
 
           <View>
-            <Text style={[styles.label, { color: textColor }]} >
-              Confirm 
-            </Text>
+            <Text style={[styles.label, { color: textColor }]}>Confirm</Text>
             <TextInput
               style={[
                 styles.input,
@@ -338,7 +352,12 @@ const SignUp = () => {
         </ScrollView>
       )}
 
-      <SubmitButtonWrapper isLoading={isLoading} label="Next" errorMessage={error} onSubmit={() => nextStep()} />
+      <SubmitButtonWrapper
+        isLoading={isLoading}
+        label="Next"
+        errorMessage={error}
+        onSubmit={() => nextStep()}
+      />
     </View>
   );
 };
